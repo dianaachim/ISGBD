@@ -3,25 +3,16 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-
-<GridPane alignment="center" hgap="10" vgap="10" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/10.0.2-internal" fx:controller="sample.Controller">
-   <columnConstraints>
-      <ColumnConstraints />
-   </columnConstraints>
-   <rowConstraints>
-      <RowConstraints />
-      <RowConstraints />
-   </rowConstraints>
-   <children>
-      <BorderPane prefHeight="492.0" prefWidth="492.0" GridPane.rowIndex="1">
-         <left>
-            <HBox prefHeight="492.0" prefWidth="256.0" BorderPane.alignment="CENTER">
-               <children>
-                  <TextField />
-                  <Button mnemonicParsing="false" text="Button" />
-               </children>
-            </HBox>
-         </left>
-      </BorderPane>
-   </children>
-</GridPane>
+<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/10.0.2-internal" xmlns:fx="http://javafx.com/fxml/1">
+   <center>
+      <HBox prefHeight="100.0" prefWidth="200.0" BorderPane.alignment="CENTER">
+         <children>
+            <TextField id="create_database_field" promptText="database name" />
+            <Button id="create_database_button" mnemonicParsing="false" text="CREATE DATABASE" />
+         </children>
+      </HBox>
+   </center>
+   <bottom>
+      <TextArea id="create_database_message_field" prefHeight="200.0" prefWidth="200.0" promptText="message" BorderPane.alignment="CENTER" />
+   </bottom>
+</BorderPane>
