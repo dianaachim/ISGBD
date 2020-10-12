@@ -9,6 +9,7 @@
          <children>
             <TextField id="create_database_field" promptText="database name" />
             <Button id="create_database_button" mnemonicParsing="false" text="CREATE DATABASE" />
+            <Button mnemonicParsing="false" text="DROP DATABASE" />
          </children>
       </HBox>
    </center>

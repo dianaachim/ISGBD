@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.geometry.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
@@ -9,7 +10,11 @@
          <children>
             <TextField id="create_database_field" promptText="database name" />
             <Button id="create_database_button" mnemonicParsing="false" text="CREATE DATABASE" />
+            <Button mnemonicParsing="false" text="DROP DATABASE" />
          </children>
+         <padding>
+            <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+         </padding>
       </HBox>
    </center>
    <bottom>
