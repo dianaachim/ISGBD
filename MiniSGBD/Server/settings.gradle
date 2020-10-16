@@ -1,0 +1,6 @@
+rootProject.name = 'Server'
+include ':Model'
+include ':Repository'
+include ':Service'
+
+

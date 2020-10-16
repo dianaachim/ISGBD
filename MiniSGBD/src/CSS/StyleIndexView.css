@@ -1,0 +1,6 @@
+#root
+{
+
+    -fx-background-image: url('index.jpg');
+    -fx-background-size: cover;
+}

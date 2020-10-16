@@ -8,9 +8,15 @@
    <center>
       <HBox prefHeight="100.0" prefWidth="200.0" BorderPane.alignment="CENTER">
          <children>
-            <TextField id="create_database_field" promptText="database name" />
-            <Button id="create_database_button" mnemonicParsing="false" text="CREATE DATABASE" />
-            <Button mnemonicParsing="false" text="DROP DATABASE" />
+            <TextField id="create_database_field" fx:id="create_database_field" promptText="database name">
+               <HBox.margin>
+                  <Insets right="10.0" />
+               </HBox.margin></TextField>
+            <Button id="create_database_button" fx:id="create_database_button" mnemonicParsing="false" text="CREATE DATABASE">
+               <HBox.margin>
+                  <Insets right="10.0" />
+               </HBox.margin></Button>
+            <Button id="drop_database_button" fx:id="drop_database_button" mnemonicParsing="false" text="DROP DATABASE" />
          </children>
          <padding>
             <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
@@ -18,6 +24,12 @@
       </HBox>
    </center>
    <bottom>
-      <TextArea id="create_database_message_field" prefHeight="200.0" prefWidth="200.0" promptText="message" BorderPane.alignment="CENTER" />
+      <TextArea id="create_database_message_field" prefHeight="200.0" prefWidth="200.0" promptText="message" BorderPane.alignment="CENTER">
+         <padding>
+            <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+         </padding>
+         <BorderPane.margin>
+            <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+         </BorderPane.margin></TextArea>
    </bottom>
 </BorderPane>

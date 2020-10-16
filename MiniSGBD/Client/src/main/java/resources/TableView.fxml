@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.text.Font?>
+
+<AnchorPane id="root" prefHeight="400.0" prefWidth="600.0" stylesheets="@../../../../src/CSS/StyleTablesView.css" xmlns="http://javafx.com/javafx/9.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="GUI.TableViewC">
+    <children>
+        <Label layoutX="240.0" layoutY="56.0" prefHeight="30.0" prefWidth="163.0" text="TABLES VIEW" textFill="#e3ff12">
+            <font>
+                <Font name="System Bold" size="20.0" />
+            </font>
+        </Label>
+        <Label layoutX="169.0" layoutY="39.0" />
+      <TableView fx:id="tableView" layoutX="48.0" layoutY="124.0" prefHeight="200.0" prefWidth="200.0">
+        <columns>
+          <TableColumn fx:id="nameC" prefWidth="75.0" text="Name" />
+        </columns>
+      </TableView>
+      <Button fx:id="deleteBtn" layoutX="403.0" layoutY="124.0" mnemonicParsing="false" onAction="#DeleteTable" text="Delete Table" textFill="#ee0e0e">
+         <font>
+            <Font size="14.0" />
+         </font></Button>
+      <Button fx:id="indexBtn" layoutX="403.0" layoutY="188.0" mnemonicParsing="false" onAction="#OpenCreateIndex" text="Create Index" textFill="#d608dd">
+         <font>
+            <Font size="14.0" />
+         </font></Button>
+      <Button fx:id="refreshBtn" layoutX="403.0" layoutY="245.0" mnemonicParsing="false" onAction="#loaddata1" text="Refresh" textFill="#fcca05" />
+      <Button fx:id="viewDataBtn" layoutX="403.0" layoutY="294.0" mnemonicParsing="false" onAction="#OpenDataView" text="VizualizareDate" textFill="#056851">
+         <font>
+            <Font size="14.0" />
+         </font></Button>
+    </children>
+</AnchorPane>
