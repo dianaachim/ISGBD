@@ -1,0 +1,58 @@
+
+group 'org.example'
+version '1.0-SNAPSHOT'
+
+apply plugin: 'java'
+
+sourceCompatibility = 1.8
+
+repositories {
+    mavenCentral()
+    maven { url "https://repo.spring.io/libs-release" }
+    mavenLocal()
+}
+
+dependencies {
+    compile project(':Model')
+    testCompile group: 'junit', name: 'junit', version: '4.12'
+    compile 'org.springframework:spring-context:5.0.4.RELEASE'
+    compile("org.springframework.boot:spring-boot-starter-web")
+    testCompile('org.springframework.boot:spring-boot-starter-test')
+    testCompile('com.jayway.jsonpath:json-path')
+    compile group: 'redis.clients', name: 'jedis', version: '2.8.0'
+    compile 'redis.clients:jedis:2.9.0'
+    compile 'org.mongodb:mongo-java-driver:2.12.3'
+    // https://mvnrepository.com/artifact/javax.xml.bind/jaxb-api
+    compile group: 'javax.xml.bind', name: 'jaxb-api', version: '2.4.0-b180830.0359'
+
+}
+
+//sourceSets.main.java.srcDirs "src/generated-sources/java"
+//configurations {
+//    jaxb
+//}
+//dependencies {
+//    jaxb (
+//            'com.sun.xml.bind:jaxb-xjc:2.2.7',
+//            'com.sun.xml.bind:jaxb-impl:2.2.7'
+//    )
+//}
+//task jaxb {
+//    System.setProperty('javax.xml.accessExternalSchema', 'all')
+//    def jaxbTargetDir = file("src/generated-sources/java")
+//    doLast {
+//        jaxbTargetDir.mkdirs()
+//        ant.taskdef(
+//                name: 'xjc',
+//                classname: 'com.sun.tools.xjc.XJCTask',
+//                classpath: configurations.jaxb.asPath
+//        )
+//        ant.jaxbTargetDir = jaxbTargetDir
+//        ant.xjc(
+//                destdir: '${jaxbTargetDir}',
+//                package: 'com.roytuts.jaxb',
+//                schema: 'src/main/resources/xsd/shiporder.xsd'
+//        )
+//    }
+//}
+//compileJava.dependsOn jaxb

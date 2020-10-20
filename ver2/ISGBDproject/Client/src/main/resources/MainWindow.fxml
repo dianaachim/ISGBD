@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.text.Font?>
+
+<AnchorPane id="root" prefHeight="400.0" prefWidth="600.0" stylesheets="@../../../../src/CSS/StyleMainWindow.css" xmlns="http://javafx.com/javafx/9.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="GUI.MainWindow">
+    <children>
+        <Button fx:id="CreateDbBtn" layoutX="45.0" layoutY="30.0" mnemonicParsing="false" onAction="#OpenCreateDB" text="CREATE DB" textAlignment="CENTER" textFill="#7c0e80" wrapText="true">
+            <font>
+                <Font name="System Bold" size="14.0" />
+            </font>
+        </Button>
+        <Label id="name" alignment="CENTER" layoutX="252.0" layoutY="71.0" prefHeight="39.0" prefWidth="122.0" stylesheets="@../../../../src/CSS/StyleMainWindow.css" text="DATABASES:" textAlignment="CENTER" textFill="#e3ff12" wrapText="true">
+            <font>
+                <Font name="Arial" size="31.0" />
+            </font>
+        </Label>
+      <Button fx:id="refreshBtn" layoutX="64.0" layoutY="78.0" mnemonicParsing="false" onAction="#loaddata1" text="Refresh" textFill="#19a1eb" />
+      <TableView fx:id="DbTableiew" layoutX="27.0" layoutY="119.0" prefHeight="219.0" prefWidth="544.0">
+        <columns>
+          <TableColumn fx:id="dbNameColumn" prefWidth="543.0" text="Database Name" />
+        </columns>
+      </TableView>
+      <Button fx:id="deleteBtn" layoutX="145.0" layoutY="30.0" mnemonicParsing="false" onAction="#DeleteDB" text="DELETE DATABASE" textFill="#800e13">
+         <font>
+            <Font name="System Bold" size="14.0" />
+         </font></Button>
+      <Button fx:id="createTableBtn" layoutX="299.0" layoutY="30.0" mnemonicParsing="false" onAction="#OpenCreateTable" text="CREATE TABLE" textFill="#1951eb">
+         <font>
+            <Font size="14.0" />
+         </font></Button>
+      <Button fx:id="tablesBtn" layoutX="417.0" layoutY="30.0" mnemonicParsing="false" onAction="#OpenTables" text="Tables" textFill="#076807">
+         <font>
+            <Font size="14.0" />
+         </font></Button>
+      <Button fx:id="QueryBtn" layoutX="500.0" layoutY="33.0" mnemonicParsing="false" onAction="#OpenQuery" text="Query" />
+      <Button layoutX="499.0" layoutY="78.0" mnemonicParsing="false" onAction="#OpenJoin" text="Join" />
+    </children>
+</AnchorPane>

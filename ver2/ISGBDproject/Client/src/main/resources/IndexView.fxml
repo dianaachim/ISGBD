@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.text.Font?>
+
+<AnchorPane id="root" prefHeight="400.0" prefWidth="773.0" stylesheets="@../../../../src/CSS/StyleIndexView.css" xmlns="http://javafx.com/javafx/9.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="GUI.IndexView">
+    <children>
+        <Label layoutX="70.0" layoutY="52.0" text="Attributes">
+            <font>
+                <Font name="System Bold" size="14.0" />
+            </font>
+        </Label>
+      <TableView fx:id="tableView" layoutX="16.0" layoutY="109.0" prefHeight="200.0" prefWidth="501.0">
+        <columns>
+          <TableColumn fx:id="nameC" prefWidth="56.0" text="name" />
+          <TableColumn fx:id="typeC" prefWidth="74.0" text="type" />
+            <TableColumn fx:id="countC" prefWidth="59.0" text="count" />
+            <TableColumn fx:id="pkC" prefWidth="84.0" text="primary key" />
+            <TableColumn fx:id="ukC" prefWidth="60.0" text="unique key" />
+            <TableColumn fx:id="fkC" prefWidth="63.0" text="foreign key" />
+            <TableColumn fx:id="referenceC" prefWidth="93.0" text="reference" />
+        </columns>
+      </TableView>
+      <Button fx:id="createBtn" layoutX="588.0" layoutY="247.0" mnemonicParsing="false" onAction="#createIndex" text="Create Index" textFill="#800890">
+         <font>
+            <Font name="System Bold" size="14.0" />
+         </font></Button>
+    </children>
+</AnchorPane>
