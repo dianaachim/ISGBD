@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+    <bean id="repo" class="Repository.Repository"/>
+    <bean id="repoDBN" class="Repository.RepositoryDBNames">
+        <constructor-arg index="0" ref="repo"/>
+    </bean>
+
+    <bean id="service" class="Server.Service">
+        <constructor-arg index="0" ref="repoDBN"/>
+        <constructor-arg index="1" ref="repo"/>
+    </bean>
+
+    <bean class="org.springframework.remoting.rmi.RmiServiceExporter">
+
+        <property name="serviceName" value="server"/>
+        <property name="service" ref="service"/>
+        <property name="serviceInterface" value="Service.IService"/>
+        <property name="servicePort" value="1099"/>
+    </bean>
+
+
+</beans>

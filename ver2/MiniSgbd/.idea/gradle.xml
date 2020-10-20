@@ -1,62 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
-  <component name="GradleMigrationSettings" migrationVersion="1" />
   <component name="GradleSettings">
     <option name="linkedExternalProjectsSettings">
       <GradleProjectSettings>
         <option name="distributionType" value="DEFAULT_WRAPPED" />
-        <option name="externalProjectPath" value="$PROJECT_DIR$/Client" />
+        <option name="externalProjectPath" value="$PROJECT_DIR$" />
         <option name="modules">
           <set>
+            <option value="$PROJECT_DIR$" />
             <option value="$PROJECT_DIR$/Client" />
-            <option value="$PROJECT_DIR$/Client/Model" />
-            <option value="$PROJECT_DIR$/Client/Service" />
-          </set>
-        </option>
-        <option name="useQualifiedModuleNames" value="true" />
-      </GradleProjectSettings>
-      <GradleProjectSettings>
-        <option name="distributionType" value="DEFAULT_WRAPPED" />
-        <option name="externalProjectPath" value="$PROJECT_DIR$/Module" />
-        <option name="modules">
-          <set>
-            <option value="$PROJECT_DIR$/Module" />
-          </set>
-        </option>
-        <option name="useQualifiedModuleNames" value="true" />
-      </GradleProjectSettings>
-      <GradleProjectSettings>
-        <option name="distributionType" value="DEFAULT_WRAPPED" />
-        <option name="externalProjectPath" value="$PROJECT_DIR$/Repository" />
-        <option name="modules">
-          <set>
-            <option value="$PROJECT_DIR$/Repository" />
-            <option value="$PROJECT_DIR$/Repository/Model" />
-          </set>
-        </option>
-        <option name="useQualifiedModuleNames" value="true" />
-      </GradleProjectSettings>
-      <GradleProjectSettings>
-        <option name="distributionType" value="DEFAULT_WRAPPED" />
-        <option name="externalProjectPath" value="$PROJECT_DIR$/Server" />
-        <option name="modules">
-          <set>
             <option value="$PROJECT_DIR$/Server" />
-            <option value="$PROJECT_DIR$/Server/Model" />
-            <option value="$PROJECT_DIR$/Server/Repository" />
-            <option value="$PROJECT_DIR$/Server/Service" />
-          </set>
-        </option>
-        <option name="useQualifiedModuleNames" value="true" />
-      </GradleProjectSettings>
-      <GradleProjectSettings>
-        <option name="distributionType" value="DEFAULT_WRAPPED" />
-        <option name="externalProjectPath" value="$PROJECT_DIR$/Service" />
-        <option name="modules">
-          <set>
-            <option value="$PROJECT_DIR$/Service" />
-            <option value="$PROJECT_DIR$/Service/Model" />
-            <option value="$PROJECT_DIR$/Service/Repository" />
           </set>
         </option>
         <option name="useQualifiedModuleNames" value="true" />

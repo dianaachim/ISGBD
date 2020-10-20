@@ -1,0 +1,4 @@
+rootProject.name = 'MiniSgbd'
+include 'Client'
+include 'Server'
+

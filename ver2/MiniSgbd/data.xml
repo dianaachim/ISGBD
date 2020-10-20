@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Databases>
+    <Database databaseName="HP"/>
+    <Database databaseName="School">
+        <Table TableName="classrooms">
+            <Attribute fk="true" length="30" name="id" notNull="true" pk="true" reference="null" type="int" uk="false"/>
+        </Table>
+    </Database>
+</Databases>
