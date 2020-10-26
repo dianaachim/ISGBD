@@ -1,9 +1,6 @@
 package Server;
 
-import Domain.Attribute;
-import Domain.Database;
-import Domain.Databases;
-import Domain.Table;
+import Domain.*;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
@@ -21,7 +18,7 @@ public class Service {
         this.dbs = dbs;
     }
 
-    public void createDB(String name) throws JAXBException {
+    public String createDB(String name) throws JAXBException {
 
         Database db = new Database();
         db.setDatabaseName(name);
@@ -33,10 +30,11 @@ public class Service {
         JAXBContext context = JAXBContext.newInstance(Databases.class);
         Marshaller mar= context.createMarshaller();
         mar.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
-        mar.marshal(dbs, new File("./data.xml"));
+        mar.marshal(dbs, new File("./catalog.xml"));
+        return "Database successfully created!";
     }
 
-    public void dropDB(String name) throws JAXBException {
+    public String dropDB(String name) throws JAXBException {
 
         for (Database db: dbsList) {
             if (db.getDatabaseName().equals(name)) {
@@ -45,12 +43,14 @@ public class Service {
                 JAXBContext context = JAXBContext.newInstance(Databases.class);
                 Marshaller mar= context.createMarshaller();
                 mar.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
-                mar.marshal(dbs, new File("./data.xml"));
+                mar.marshal(dbs, new File("./catalog.xml"));
+                return "Database successfully removed!";
             }
         }
+        return "Error dropping database!";
     }
 
-    public void createTable(String tableName, String databaseName, List<Attribute> attributes) throws JAXBException {
+    public String createTable(String tableName, String databaseName, List<Attribute> attributes) throws JAXBException {
         List<Table> tableList;
         for (Database db: dbsList) {
             if (db.getDatabaseName().equals(databaseName)) {
@@ -62,27 +62,57 @@ public class Service {
                 JAXBContext context = JAXBContext.newInstance(Databases.class);
                 Marshaller mar= context.createMarshaller();
                 mar.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
-                mar.marshal(dbs, new File("./data.xml"));
+                mar.marshal(dbs, new File("./catalog.xml"));
+                return "Table successfully created!";
             }
         }
+        return "Error creating table!";
     }
 
-    public void dropTable(String tableName, String databaseName) throws JAXBException {
+    public String dropTable(String tableName, String databaseName) throws JAXBException {
+
         List<Table> tableList;
         for (Database db: dbsList) {
             if (db.getDatabaseName().equals(databaseName)) {
                 tableList = db.getTablesList();
-                for (Table table: tableList) {
-                    if (table.getTableName().equals(tableName)){
-                        tableList.remove(table);
-                    }
-                }
+                tableList.removeIf(table -> table.getTableName().equals(tableName));
                 db.setTablesList(tableList);
                 JAXBContext context = JAXBContext.newInstance(Databases.class);
                 Marshaller mar= context.createMarshaller();
                 mar.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
-                mar.marshal(dbs, new File("./data.xml"));
+                mar.marshal(dbs, new File("./catalog.xml"));
+                return "Table successfully removed!";
             }
         }
+        return "Error dropping table!";
+    }
+
+    public String createIndex(String name, String tableName, String columnName, String dbName, Boolean unique) throws JAXBException {
+        String message = "Error creating Index!";
+
+        List<Index> indexList;
+
+        for (Database db : dbsList) {
+            if (db.getDatabaseName().equals(dbName)) {
+                for (Table table : db.getTablesList()) {
+                    if (table.getTableName().equals(tableName)) {
+                        Index index = new Index(name, tableName, columnName, dbName, unique);
+                        indexList = table.getIndexList();
+                        indexList.add(index);
+                        table.setIndexList(indexList);
+
+                        JAXBContext context = JAXBContext.newInstance(Databases.class);
+                        Marshaller mar= context.createMarshaller();
+                        mar.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
+                        mar.marshal(dbs, new File("./catalog.xml"));
+
+                        message = "Index successfully created!";
+                        return message;
+                    }
+                }
+            }
+        }
+
+        return message;
     }
 }

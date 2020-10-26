@@ -31,7 +31,8 @@ public class MyServer {
         serverPrintOut.println("3. Create table");
         serverPrintOut.println("4. Drop table");
         serverPrintOut.println("4. Create index");
-        serverPrintOut.println("0. Exit program");
+        serverPrintOut.println("0. Print menu");
+        serverPrintOut.println("'done' for exit");
     }
 
 
@@ -56,9 +57,9 @@ public class MyServer {
 
             while(!done && scanner.hasNextLine()) {
                 String line = scanner.nextLine();
-                serverPrintOut.println("Echo from Diana's Server: " + line);
+//                serverPrintOut.println("Echo from Diana's Server: " + line);
 
-                if(line.toLowerCase().trim().equals("0")) {
+                if(line.toLowerCase().trim().equals("done")) {
                     done = true;
                 } else if (line.toLowerCase().trim().equals("1")) {
                     createDB(connectionSocket);
@@ -75,7 +76,9 @@ public class MyServer {
                 } else if (line.toLowerCase().trim().equals("5")) {
                     createIndex(connectionSocket);
                     serverPrintOut.println("Next command...");
-                } else {
+                } else if (line.toLowerCase().trim().equals("0")) {
+                    printMenu(serverPrintOut);
+                }else {
                     serverPrintOut.println("Wrong command");
                 }
             }
@@ -94,9 +97,7 @@ public class MyServer {
         serverPrintOut.println("Database name: ");
 
         String line = scanner.nextLine();
-        serverPrintOut.println("Database created ");
-
-        this.service.createDB(line);
+        serverPrintOut.println(this.service.createDB(line));
     }
 
     public void dropDB(Socket connectionSocket) throws IOException, JAXBException {
@@ -108,9 +109,7 @@ public class MyServer {
 
         serverPrintOut.println("Database name:");
         String line = scanner.nextLine();
-        serverPrintOut.println("Database dropped ");
-
-        this.service.dropDB(line);
+        serverPrintOut.println(this.service.dropDB(line));
 
     }
 
@@ -140,23 +139,7 @@ public class MyServer {
         serverPrintOut.println("Done? ");
 
         while(!done && scanner.hasNextLine()) {
-//            serverPrintOut.println("Done? ");
             String line = scanner.nextLine();
-//            serverPrintOut.println("name: ");
-//            String name = scanner.nextLine();
-//            serverPrintOut.println("type: ");
-//            String type = scanner.nextLine();
-//            serverPrintOut.println("primary key(y/n): ");
-//            String pk = scanner.nextLine();
-//            serverPrintOut.println("unique key(y/n): ");
-//            String uk = scanner.nextLine();
-//            serverPrintOut.println("foreign key(y/n): ");
-//            String fk = scanner.nextLine();
-//            serverPrintOut.println("reference: ");
-//            String reference = scanner.nextLine();
-//
-//            serverPrintOut.println("Done? ");
-//            String line = scanner.nextLine();
 
             if(line.toLowerCase().trim().equals("done")) {
                 done = true;
@@ -178,10 +161,10 @@ public class MyServer {
                 serverPrintOut.println("reference: ");
                 String reference = scanner.nextLine();
 
-                Boolean not_null;
-                Boolean primary_key;
-                Boolean unique_key;
-                Boolean foreign_key;
+                boolean not_null;
+                boolean primary_key;
+                boolean unique_key;
+                boolean foreign_key;
 
                 not_null = notNull.equals("y");
                 primary_key = pk.equals("y");
@@ -193,7 +176,8 @@ public class MyServer {
                 serverPrintOut.println("Done? ");
             }
         }
-        this.service.createTable(tableName, databaseName, attributeList);
+        serverPrintOut.println(this.service.createTable(tableName, databaseName, attributeList));
+
     }
 
     public void dropTable(Socket connectionSocket) throws IOException, JAXBException {
@@ -211,10 +195,12 @@ public class MyServer {
 
         String databaseName = scanner.nextLine();
 
-        this.service.dropTable(tableName, databaseName);
+        serverPrintOut.println(this.service.dropTable(tableName, databaseName));
+
     }
 
-    public void createIndex(Socket connectionSocket) throws IOException {
+    public void createIndex(Socket connectionSocket) throws IOException, JAXBException {
+
         InputStream inputToServer = connectionSocket.getInputStream();
         OutputStream outputFromServer = connectionSocket.getOutputStream();
 
@@ -222,8 +208,26 @@ public class MyServer {
         PrintWriter serverPrintOut = new PrintWriter(new OutputStreamWriter(outputFromServer, "UTF-8"), true);
 
         serverPrintOut.println("Index name: ");
+        String name = scanner.nextLine();
 
-        String line = scanner.nextLine();
-        serverPrintOut.println("Echo from Diana's Server: " + line);
+        serverPrintOut.println("ON table: ");
+        String table = scanner.nextLine();
+
+        serverPrintOut.println("From database: ");
+        String database = scanner.nextLine();
+
+        serverPrintOut.println("On column: ");
+        String column = scanner.nextLine();
+
+        serverPrintOut.println("Is Unique(y/n): ");
+        String isUnique = scanner.nextLine();
+
+        boolean unique = false;
+
+        if (isUnique.equals("y"))
+            unique = true;
+
+        String message = this.service.createIndex(name, table, column, database, unique);
+        serverPrintOut.println(message);
     }
 }

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Databases>
+    <Database databaseName="School">
+        <Table TableName="Teachers">
+            <Attribute fk="true" length="20" name="tid" notNull="false" pk="true" reference="" type="int" uk="false"/>
+            <Attribute fk="false" length="40" name="name" notNull="false" pk="false" reference="" type="char" uk="false"/>
+            <Index column="tid" name="id" isUnique="true"/>
+        </Table>
+    </Database>
+</Databases>
