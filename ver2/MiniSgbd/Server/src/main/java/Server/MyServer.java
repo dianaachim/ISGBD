@@ -2,6 +2,7 @@ package Server;
 
 import Domain.Attribute;
 import Domain.Databases;
+import Repository.Repository;
 import com.sun.org.apache.xpath.internal.operations.Bool;
 
 import javax.xml.bind.JAXBException;
@@ -15,9 +16,8 @@ import java.util.Scanner;
 public class MyServer {
     private Service service;
 
-    public MyServer() {
-        Databases dbs = new Databases();
-        service = new Service(dbs);
+    public MyServer( Repository repo) {
+        service = new Service(repo);
     }
 
 //    public static void main(String[] args) {
@@ -30,7 +30,7 @@ public class MyServer {
         serverPrintOut.println("2. Drop database");
         serverPrintOut.println("3. Create table");
         serverPrintOut.println("4. Drop table");
-        serverPrintOut.println("4. Create index");
+        serverPrintOut.println("5. Create index");
         serverPrintOut.println("0. Print menu");
         serverPrintOut.println("'done' for exit");
     }
@@ -82,12 +82,12 @@ public class MyServer {
                     serverPrintOut.println("Wrong command");
                 }
             }
-        } catch (IOException | JAXBException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    public void createDB(Socket connectionSocket) throws IOException, JAXBException {
+    public void createDB(Socket connectionSocket) throws Exception {
         InputStream inputToServer = connectionSocket.getInputStream();
         OutputStream outputFromServer = connectionSocket.getOutputStream();
 
@@ -100,7 +100,7 @@ public class MyServer {
         serverPrintOut.println(this.service.createDB(line));
     }
 
-    public void dropDB(Socket connectionSocket) throws IOException, JAXBException {
+    public void dropDB(Socket connectionSocket) throws Exception {
         InputStream inputToServer = connectionSocket.getInputStream();
         OutputStream outputFromServer = connectionSocket.getOutputStream();
 
@@ -113,7 +113,7 @@ public class MyServer {
 
     }
 
-    public void createTable(Socket connectionSocket) throws IOException, JAXBException {
+    public void createTable(Socket connectionSocket) throws Exception {
         List<Attribute> attributeList = new ArrayList<>();
 
         InputStream inputToServer = connectionSocket.getInputStream();
@@ -180,7 +180,7 @@ public class MyServer {
 
     }
 
-    public void dropTable(Socket connectionSocket) throws IOException, JAXBException {
+    public void dropTable(Socket connectionSocket) throws Exception {
         InputStream inputToServer = connectionSocket.getInputStream();
         OutputStream outputFromServer = connectionSocket.getOutputStream();
 
@@ -199,7 +199,7 @@ public class MyServer {
 
     }
 
-    public void createIndex(Socket connectionSocket) throws IOException, JAXBException {
+    public void createIndex(Socket connectionSocket) throws Exception {
 
         InputStream inputToServer = connectionSocket.getInputStream();
         OutputStream outputFromServer = connectionSocket.getOutputStream();

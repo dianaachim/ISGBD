@@ -1,4 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <Databases>
-    <Database databaseName="HP"/>
+    <Database databaseName="School">
+        <Table TableName="Classrooms">
+            <Attribute fk="true" length="20" name="cid" notNull="true" pk="true" reference="" type="int" uk="false"/>
+            <Index column="id" name="id" isUnique="true"/>
+        </Table>
+    </Database>
+    <Database databaseName="Garden"/>
 </Databases>
