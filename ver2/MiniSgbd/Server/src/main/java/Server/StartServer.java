@@ -2,7 +2,7 @@ package Server;
 
 import Repository.Repository;
 import Repository.ConvertXML;
-import org.apache.catalina.Server;
+import Server.Server;
 
 import javax.xml.bind.JAXBException;
 
@@ -13,6 +13,7 @@ public class StartServer {
             ConvertXML converter = new ConvertXML();
             Repository repo = new Repository(converter);
             MyServer server = new MyServer(repo);
+//            Server server = new Server(repo);
             server.connectToServer();
         } catch (JAXBException e) {
             e.printStackTrace();

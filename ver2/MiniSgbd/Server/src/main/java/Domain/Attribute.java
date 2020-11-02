@@ -1,6 +1,7 @@
 package Domain;
 
 import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlElement;
 import java.io.Serializable;
 
 public class Attribute implements Serializable {
@@ -53,7 +54,7 @@ public class Attribute implements Serializable {
         this.length = length;
     }
 
-    @XmlAttribute(name="pk")
+    @XmlAttribute(name="PrimaryKey")
     public Boolean getPk() {
         return pk;
     }

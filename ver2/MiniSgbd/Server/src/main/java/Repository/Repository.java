@@ -14,6 +14,8 @@ public class Repository implements IRepository<String, Database> {
         this.dbs = this.converter.jaxbXMLToObject();
     }
 
+
+
     @Override
     public String save(Database entity) throws Exception {
         if (this.find(entity.getDatabaseName())==null) {
@@ -52,6 +54,14 @@ public class Repository implements IRepository<String, Database> {
 
     public List<Database> getDbsList() {
         return this.dbs.getDbList();
+    }
+
+    public Database getLastDatabase() {
+        if (this.getDbsList().isEmpty()) {
+            return null;
+        } else {
+            return this.getDbsList().get(this.getDbsList().size()-1);
+        }
     }
 
     public List<Table> getTables(String dbName) throws Exception {

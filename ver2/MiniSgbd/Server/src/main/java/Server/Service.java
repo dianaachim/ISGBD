@@ -11,14 +11,37 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Service {
-//    private ArrayList<Database> dbsList;
-//    private Databases dbs;
+    private Database currentDatabase;
     private Repository repository;
 
     public Service(Repository repository) {
         this.repository = repository;
-//        this.dbsList = new ArrayList<>();
-//        this.dbs = dbs;
+        this.currentDatabase = this.repository.getLastDatabase();
+    }
+
+    public String checkCommand(String command) throws Exception {
+        String[] cmd = command.split(" ");
+        if (cmd[0].toLowerCase().equals("status")) {
+            return this.getCurrentDatabase().toString();
+        } else if (cmd[0].toLowerCase().equals("create")) {
+            if (cmd[1].toLowerCase().equals("database")) {
+                return this.createDB(cmd[2]);
+            }
+        } else if (cmd[0].toLowerCase().equals("drop")) {
+            if (cmd[1].toLowerCase().equals("database")) {
+                return this.dropDB(cmd[2]);
+            }
+        } else if (cmd[0].toLowerCase().equals("use")) {
+            if (cmd[1].toLowerCase().equals("database")) {
+                if (this.repository.find(cmd[2])!=null) {
+                    this.setCurrentDatabase(cmd[2]);
+                    return "Database changed to " + cmd[2];
+                } else {
+                    return "Database not found!";
+                }
+            }
+        }
+        return "Wrong command";
     }
 
     public String createDB(String name) throws Exception {
@@ -129,5 +152,13 @@ public class Service {
 //        }
 //
 //        return message;
+    }
+
+    public Database getCurrentDatabase() {
+        return currentDatabase;
+    }
+
+    public void setCurrentDatabase(String dbname) throws Exception {
+        this.currentDatabase = this.repository.find(dbname);
     }
 }

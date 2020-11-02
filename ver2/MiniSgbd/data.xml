@@ -2,8 +2,16 @@
 <Databases>
     <Database databaseName="School">
         <Table TableName="Classrooms">
-            <Attribute fk="true" length="20" name="cid" notNull="true" pk="true" reference="" type="int" uk="false"/>
+            <Attribute fk="true" length="20" name="cid" notNull="true" reference="" type="int" uk="false"/>
             <Index column="id" name="id" isUnique="true"/>
+        </Table>
+        <Table TableName="Rooms">
+            <Attribute fk="true" length="30" name="id" notNull="true" reference="" type="int" uk="false">
+                <PrimaryKey>true</PrimaryKey>
+            </Attribute>
+            <Attribute fk="false" length="30" name="name" notNull="true" reference="" type="string" uk="false">
+                <PrimaryKey>false</PrimaryKey>
+            </Attribute>
         </Table>
     </Database>
     <Database databaseName="Garden"/>
