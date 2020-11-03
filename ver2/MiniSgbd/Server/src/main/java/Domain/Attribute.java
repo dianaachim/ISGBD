@@ -25,7 +25,16 @@ public class Attribute implements Serializable {
         this.reference = reference;
     }
 
-    public Attribute(){}
+    public Attribute(){
+        this.name = "";
+        this.type = "";
+        this.length = 0;
+        this.notNull = false;
+        this.pk = false;
+        this.fk = false;
+        this.uk = false;
+        this.reference = "";
+    }
 
     @XmlAttribute(name="name")
     public String getName() {
@@ -92,7 +101,7 @@ public class Attribute implements Serializable {
 
     @Override
     public String toString() {
-        return name + type + pk + fk + uk + reference;
+        return name + "; " + type + "; " + pk + "; " + fk + "; " + uk + "; " + reference;
     }
 
     @XmlAttribute(name="notNull")

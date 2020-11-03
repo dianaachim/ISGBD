@@ -52,7 +52,7 @@ public class Table implements Serializable {
 
     @Override
     public String toString() {
-        return tableName + "(" + attributeList.toString() + ")";
+        return tableName;
     }
 
     public String getDatabaseName() {

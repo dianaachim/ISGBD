@@ -2,13 +2,17 @@ package Server;
 
 import Domain.*;
 import Repository.Repository;
+import org.w3c.dom.Attr;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import java.io.File;
+import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.regex.Pattern;
 
 public class Service {
     private Database currentDatabase;
@@ -20,19 +24,24 @@ public class Service {
     }
 
     public String checkCommand(String command) throws Exception {
-        String[] cmd = command.split(" ");
+        String[] cmd = command.split(" ", 3);
         if (cmd[0].toLowerCase().equals("status")) {
             return this.getCurrentDatabase().toString();
         } else if (cmd[0].toLowerCase().equals("create")) {
-            if (cmd[1].toLowerCase().equals("database")) {
+            if (cmd[1].toLowerCase().equals("db")) {
                 return this.createDB(cmd[2]);
+            } else if (cmd[1].toLowerCase().equals("table")) {
+                return this.checkCreateTableCommand(cmd[2]);
             }
         } else if (cmd[0].toLowerCase().equals("drop")) {
-            if (cmd[1].toLowerCase().equals("database")) {
+            if (cmd[1].toLowerCase().equals("db")) {
                 return this.dropDB(cmd[2]);
+            } else if (cmd[1].toLowerCase().equals("table")) {
+
+                return this.dropTable(cmd[2], currentDatabase.getDatabaseName());
             }
         } else if (cmd[0].toLowerCase().equals("use")) {
-            if (cmd[1].toLowerCase().equals("database")) {
+            if (cmd[1].toLowerCase().equals("db")) {
                 if (this.repository.find(cmd[2])!=null) {
                     this.setCurrentDatabase(cmd[2]);
                     return "Database changed to " + cmd[2];
@@ -40,8 +49,70 @@ public class Service {
                     return "Database not found!";
                 }
             }
+        } else if(cmd[0].toLowerCase().equals("test")) {
+            return cmd[2];
+        } else if(cmd[0].toLowerCase().equals("show")) {
+            if (cmd[1].toLowerCase().equals("dbs")) {
+                return this.repository.getDbsList().toString();
+            } else if (cmd[1].toLowerCase().equals("tables")) {
+                return this.repository.getTables(this.currentDatabase.toString()).toString();
+            }
         }
         return "Wrong command";
+    }
+
+    public String checkCreateTableCommand(String cmd) throws Exception {
+        String[] table = cmd.split("\\.");
+        ArrayList<Attribute> attributeArrayList = new ArrayList<>();
+        String tableName = table[0];
+        for (String tb : table) {
+            if (tb.split("\\(")[0].equals("attrs")) {
+                String[] attrs =  tb.split("[\\()]")[1].split(",");
+                for (String attribute : attrs) {
+                    Attribute a = new Attribute();
+                    String[] att = attribute.split(" ");
+                    if (att[0].equals("")) {
+                        a.setName(att[1]);
+                        a.setType(att[2]);
+                    } else {
+                        a.setName(att[0]);
+                        a.setType(att[1]);
+                    }
+                    attributeArrayList.add(a);
+                }
+            } else if (tb.split("\\(")[0].equals("uk")) {
+                String uk =  tb.split("[\\()]")[1];
+                for (Attribute a: attributeArrayList) {
+                    if (a.getName().equals(uk)) {
+                        a.setUk(true);
+                        a.setNotNull(true);
+                    }
+                }
+            } else if (tb.split("\\(")[0].equals("pk")) {
+                String pk =  tb.split("[\\()]")[1];
+                for (Attribute a: attributeArrayList) {
+                    if (a.getName().equals(pk)) {
+                        a.setPk(true);
+                        a.setNotNull(true);
+                    }
+                }
+            } else if (tb.split("\\(")[0].equals("ref")) {
+                String[] ref =  tb.split("[\\()]")[1].split(",");
+                String tableRef = ref[1].split(" ")[1];
+                if (this.repository.findTable(this.currentDatabase.getDatabaseName(), tableRef) == null) {
+                    return "Attribute reference not found";
+                } else {
+                    for (Attribute a: attributeArrayList) {
+                        if (a.getName().equals(ref[0])) {
+                            a.setFk(true);
+                            a.setReference(tableRef);
+                        }
+                    }
+                }
+            }
+        }
+        return this.createTable(tableName, this.currentDatabase.getDatabaseName(), attributeArrayList);
+
     }
 
     public String createDB(String name) throws Exception {

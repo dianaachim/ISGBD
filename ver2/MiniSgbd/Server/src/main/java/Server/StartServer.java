@@ -12,8 +12,8 @@ public class StartServer {
         try {
             ConvertXML converter = new ConvertXML();
             Repository repo = new Repository(converter);
-            MyServer server = new MyServer(repo);
-//            Server server = new Server(repo);
+//            MyServer server = new MyServer(repo);
+            Server server = new Server(repo);
             server.connectToServer();
         } catch (JAXBException e) {
             e.printStackTrace();

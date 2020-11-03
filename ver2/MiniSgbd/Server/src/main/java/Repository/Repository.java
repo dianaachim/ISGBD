@@ -87,6 +87,25 @@ public class Repository implements IRepository<String, Database> {
         return null;
     }
 
+    public Attribute findAttribute(String entity,String tableName,String attribute) throws Exception {
+
+
+        for ( Database db: this.dbs.getDbList())
+        {
+            if (entity.equals(db.getDatabaseName()))
+            {
+                for(Table tb: db.getTablesList())
+                {
+                    if(tb.getTableName().equals(tableName))
+                        for(Attribute a:tb.getAttributeList())
+                            if(a.getName().equals(attribute))
+                                return a;
+                }
+            }
+        }
+        return null;
+    }
+
     public Table findAttributeRef(String entity,String tableName) throws Exception {
         //verifica daca exista referinte la tabelul tableName in alte tabele
 

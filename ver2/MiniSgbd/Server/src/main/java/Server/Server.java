@@ -41,7 +41,7 @@ public class Server {
                 String line = scanner.nextLine();
                 serverPrintOut.println("Echo from Diana's Server: " + line);
 
-                if(line.toLowerCase().trim().equals("done")) {
+                if(line.toLowerCase().trim().equals("exit")) {
                     done = true;
                 }else {
                     serverPrintOut.println(this.service.checkCommand(line));
