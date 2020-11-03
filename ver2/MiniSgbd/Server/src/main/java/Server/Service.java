@@ -32,7 +32,9 @@ public class Service {
                 return this.createDB(cmd[2]);
             } else if (cmd[1].toLowerCase().equals("table")) {
                 return this.checkCreateTableCommand(cmd[2]);
-            }
+            } else if (cmd[1].toLowerCase().equals("index")) {
+                return this.checkCreateIndexCommand(cmd[2]);
+            } else return "Wrong command!";
         } else if (cmd[0].toLowerCase().equals("drop")) {
             if (cmd[1].toLowerCase().equals("db")) {
                 return this.dropDB(cmd[2]);
@@ -59,6 +61,10 @@ public class Service {
             }
         }
         return "Wrong command";
+    }
+
+    private String checkCreateIndexCommand(String cmd) {
+        return "hello";
     }
 
     public String checkCreateTableCommand(String cmd) throws Exception {
