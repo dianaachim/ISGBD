@@ -19,4 +19,10 @@
             <Attribute fk="true" length="0" name="id" notNull="false" PrimaryKey="false" reference="Flower" type="int" uk="false"/>
         </Table>
     </Database>
+    <Database databaseName="HP">
+        <Table TableName="test">
+            <Attribute fk="false" length="0" name="tid" notNull="true" PrimaryKey="true" reference="" type="int" uk="true"/>
+            <Attribute fk="false" length="0" name="tname" notNull="false" PrimaryKey="false" reference="" type="string" uk="false"/>
+        </Table>
+    </Database>
 </Databases>
