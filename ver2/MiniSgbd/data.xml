@@ -3,7 +3,7 @@
     <Database databaseName="School">
         <Table TableName="Classrooms">
             <Attribute fk="true" length="20" name="cid" notNull="true" PrimaryKey="false" reference="" type="int" uk="false"/>
-            <Index column="id" name="id" isUnique="true"/>
+            <Index name="id" isUnique="true"/>
         </Table>
         <Table TableName="Teachers"/>
     </Database>
@@ -23,15 +23,22 @@
         <Table TableName="test">
             <Attribute fk="false" length="0" name="tid" notNull="true" PrimaryKey="true" reference="" type="int" uk="true"/>
             <Attribute fk="false" length="0" name="tname" notNull="false" PrimaryKey="false" reference="" type="string" uk="false"/>
-            <Index column="tid" name="tid" isUnique="true"/>
-        </Table>
-        <Table TableName="test2">
-            <Attribute fk="false" length="0" name="tid2" notNull="false" PrimaryKey="false" reference="" type="int" uk="false"/>
-            <Attribute fk="false" length="0" name="name" notNull="false" PrimaryKey="false" reference="" type="int" uk="false"/>
+            <Index name="tid" isUnique="true"/>
         </Table>
         <Table TableName="testpkindex">
             <Attribute fk="false" length="0" name="pid" notNull="true" PrimaryKey="true" reference="" type="int" uk="true"/>
             <Attribute fk="false" length="0" name="name" notNull="false" PrimaryKey="false" reference="" type="string" uk="false"/>
+        </Table>
+        <Table TableName="hello">
+            <Attribute fk="false" length="0" name="hid" notNull="true" PrimaryKey="true" reference="" type="char" uk="false"/>
+            <Attribute fk="false" length="0" name="name" notNull="false" PrimaryKey="false" reference="" type="varchar" uk="false"/>
+            <Index name="hello" isUnique="false">
+                <IndexAttribute>hid</IndexAttribute>
+                <IndexAttribute>name</IndexAttribute>
+            </Index>
+            <Index name="hid" isUnique="true">
+                <IndexAttribute>hid</IndexAttribute>
+            </Index>
         </Table>
     </Database>
 </Databases>

@@ -227,7 +227,7 @@ public class MyServer {
         if (isUnique.equals("y"))
             unique = true;
 
-        String message = this.service.createIndex(name, table, column, database, unique);
-        serverPrintOut.println(message);
+//        String message = this.service.createIndex(name, table, column, database, unique);
+//        serverPrintOut.println(message);
     }
 }
