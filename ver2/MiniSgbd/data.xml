@@ -24,5 +24,13 @@
             <Attribute fk="false" length="0" name="tid" notNull="true" PrimaryKey="true" reference="" type="int" uk="true"/>
             <Attribute fk="false" length="0" name="tname" notNull="false" PrimaryKey="false" reference="" type="string" uk="false"/>
         </Table>
+        <Table TableName="test2">
+            <Attribute fk="false" length="0" name="tid2" notNull="false" PrimaryKey="false" reference="" type="int" uk="false"/>
+            <Attribute fk="false" length="0" name="name" notNull="false" PrimaryKey="false" reference="" type="int" uk="false"/>
+        </Table>
+        <Table TableName="testpkindex">
+            <Attribute fk="false" length="0" name="pid" notNull="true" PrimaryKey="true" reference="" type="int" uk="true"/>
+            <Attribute fk="false" length="0" name="name" notNull="false" PrimaryKey="false" reference="" type="string" uk="false"/>
+        </Table>
     </Database>
 </Databases>
