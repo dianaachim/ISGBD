@@ -100,6 +100,7 @@ public class Service {
                     if (a.getName().equals(pk)) {
                         a.setPk(true);
                         a.setNotNull(true);
+//                        this.createIndex(a.getName(), tableName, a.getName(), this.currentDatabase.getDatabaseName(), true);
                     }
                 }
             } else if (tb.split("\\(")[0].equals("ref")) {
