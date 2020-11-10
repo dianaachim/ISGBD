@@ -2,6 +2,7 @@ package Server;
 
 import Domain.*;
 import Repository.Repository;
+import com.sun.org.apache.xpath.internal.operations.Bool;
 import org.w3c.dom.Attr;
 
 import javax.xml.bind.JAXBContext;
@@ -63,8 +64,27 @@ public class Service {
         return "Wrong command";
     }
 
-    private String checkCreateIndexCommand(String cmd) {
-        return "hello";
+    private String checkCreateIndexCommand(String cmd) throws Exception {
+        String[] index = cmd.split("\\.");
+        String indexName=index[0];
+        String tableName= "";
+        String columnName="";
+        Boolean unique=false;
+        for (String ind : index) {
+            if (ind.split("\\(")[0].equals("on")) {
+                tableName =  ind.split("[\\()]")[1];
+            }
+            else if (ind.split("\\(")[0].equals("column")) {
+                 columnName =  ind.split("[\\()]")[1];
+            }
+            else if (ind.split("\\(")[0].equals("unique")) {
+                unique = true;
+            }
+            else
+                return "Wrong command";
+        }
+        return this.createIndex(indexName, tableName, columnName, this.currentDatabase.getDatabaseName(), unique);
+
     }
 
     public String checkCreateTableCommand(String cmd) throws Exception {

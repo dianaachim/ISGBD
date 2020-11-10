@@ -23,6 +23,7 @@
         <Table TableName="test">
             <Attribute fk="false" length="0" name="tid" notNull="true" PrimaryKey="true" reference="" type="int" uk="true"/>
             <Attribute fk="false" length="0" name="tname" notNull="false" PrimaryKey="false" reference="" type="string" uk="false"/>
+            <Index column="tid" name="tid" isUnique="true"/>
         </Table>
         <Table TableName="test2">
             <Attribute fk="false" length="0" name="tid2" notNull="false" PrimaryKey="false" reference="" type="int" uk="false"/>

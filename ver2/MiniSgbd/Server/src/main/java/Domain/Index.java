@@ -19,7 +19,9 @@ public class Index implements Serializable {
         this.unique = unique;
     }
 
-    public Index() {}
+    public Index() {
+        this.unique=false;
+    }
 
 
     public String getName() {
