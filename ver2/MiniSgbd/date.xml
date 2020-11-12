@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Databases>
+    <Database databaseName="HP">
+        <Table TableName="Teachersa">
+            <Attribute length="0" name="tid" notNull="true" PrimaryKey="true" reference="" type="char"/>
+            <Attribute length="0" name="tname" notNull="false" PrimaryKey="false" reference="" type="varchar"/>
+            <Attribute length="0" name="age" notNull="false" PrimaryKey="false" reference="" type="char"/>
+            <PrimaryKeys/>
+        </Table>
+        <Table TableName="TestKeys">
+            <Attribute length="0" name="tkid" notNull="true" PrimaryKey="true" reference="" type="char"/>
+            <Attribute length="0" name="tname" notNull="true" PrimaryKey="false" reference="" type="char"/>
+            <Attribute length="0" name="smth" notNull="true" PrimaryKey="true" reference="" type="char"/>
+            <PrimaryKeys/>
+            <UniqueKeys/>
+        </Table>
+        <Table TableName="hello">
+            <Attribute length="0" name="hid" notNull="true" PrimaryKey="true" reference="" type="int"/>
+            <Attribute length="0" name="hid2" notNull="true" PrimaryKey="true" reference="" type="int"/>
+            <Attribute length="0" name="hname" notNull="false" PrimaryKey="false" reference="" type="string"/>
+            <Index name="hello.ind" isUnique="true">
+                <IndexAttribute>hid</IndexAttribute>
+                <IndexAttribute>hid2</IndexAttribute>
+            </Index>
+            <PrimaryKeys>
+                <PkAttribute>hid</PkAttribute>
+                <PkAttribute>hid2</PkAttribute>
+            </PrimaryKeys>
+            <UniqueKeys/>
+        </Table>
+    </Database>
+</Databases>

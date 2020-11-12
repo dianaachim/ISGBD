@@ -94,6 +94,8 @@ public class Service {
     }
 
     public String checkCreateTableCommand(String cmd) throws Exception {
+        List<String> primaryKeys = new ArrayList<>();
+        List<String> uniqueKeys = new ArrayList<>();
         String[] table = cmd.split("\\.");
         ArrayList<Attribute> attributeArrayList = new ArrayList<>();
         String tableName = table[0];
@@ -115,21 +117,28 @@ public class Service {
                     }
                     break;
                 case "uk":
-                    String uk = tb.split("[()]")[1];
-                    for (Attribute a : attributeArrayList) {
-                        if (a.getName().equals(uk)) {
-                            a.setUk(true);
-                            a.setNotNull(true);
+                    String[] uks = tb.split("[()]")[1].split("[ ,]");
+                    for (String uk: uks) {
+                        for (Attribute a : attributeArrayList) {
+                            if (a.getName().equals(uk)) {
+                                a.setUk(true);
+                                a.setNotNull(true);
+                                uniqueKeys.add(uk);
+                            }
                         }
                     }
                     break;
                 case "pk":
-                    String pk = tb.split("[()]")[1];
-                    for (Attribute a : attributeArrayList) {
-                        if (a.getName().equals(pk)) {
-                            a.setPk(true);
-                            a.setNotNull(true);
+                    String[] pks = tb.split("[()]")[1].split("[ ,]");
+//                    String pk = tb.split("[()]")[1];
+                    for (String pk: pks) {
+                        for (Attribute a : attributeArrayList) {
+                            if (a.getName().equals(pk)) {
+                                a.setPk(true);
+                                a.setNotNull(true);
+                                primaryKeys.add(pk);
 //                        this.createIndex(a.getName(), tableName, a.getName(), this.currentDatabase.getDatabaseName(), true);
+                            }
                         }
                     }
                     break;
@@ -149,7 +158,11 @@ public class Service {
                     break;
             }
         }
-        return this.createTable(tableName, this.currentDatabase.getDatabaseName(), attributeArrayList);
+        PrimaryKeys pks = new PrimaryKeys();
+        pks.setPrimaryKeys(primaryKeys);
+        UniqueKeys uks = new UniqueKeys();
+        uks.setUniqueKeys(uniqueKeys);
+        return this.createTable(tableName, this.currentDatabase.getDatabaseName(), attributeArrayList, pks, uks);
 
     }
 
@@ -167,12 +180,25 @@ public class Service {
 
     }
 
-    public String createTable(String tableName, String databaseName, List<Attribute> attributes) throws Exception {
+    public String createTable(String tableName, String databaseName, List<Attribute> attributes, PrimaryKeys pks, UniqueKeys uks) throws Exception {
         Table table = new Table();
+        List<Index> idxList = new ArrayList<>();
+        String message = "";
         table.setTableName(tableName);
         table.setAttributeList(attributes);
-        return this.repository.saveTable(table, databaseName);
-
+        table.setPks(pks);
+        table.setUks(uks);
+        Index idx = new Index(table.getTableName() + ".ind", tableName, pks.getPrimaryKeys(), databaseName, true);
+//        idx.setTableName(table.getTableName());
+//        idx.setDatabaseName(databaseName);
+//        idx.setColumns(table.getPks().getPrimaryKeys());
+//        idx.setName(table.getTableName() + ".ind");
+//        idx.setUnique(true);
+        idxList.add(idx);
+        table.setIndexList(idxList);
+        message =  this.repository.saveTable(table, databaseName);
+//        message = message + " | " + this.createIndex(tableName + ".ind", tableName, pks.getPrimaryKeys(),  databaseName, true);
+        return message;
     }
 
     public String dropTable(String tableName, String databaseName) throws Exception {

@@ -176,7 +176,7 @@ public class MyServer {
                 serverPrintOut.println("Done? ");
             }
         }
-        serverPrintOut.println(this.service.createTable(tableName, databaseName, attributeList));
+//        serverPrintOut.println(this.service.createTable(tableName, databaseName, attributeList));
 
     }
 

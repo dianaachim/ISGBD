@@ -2,6 +2,7 @@ package Domain;
 
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlTransient;
 import java.io.Serializable;
 
 public class Attribute implements Serializable {
@@ -72,7 +73,7 @@ public class Attribute implements Serializable {
         this.pk = pk;
     }
 
-    @XmlAttribute(name="fk")
+    @XmlTransient
     public Boolean getFk() {
         return fk;
     }
@@ -81,7 +82,7 @@ public class Attribute implements Serializable {
         this.fk = fk;
     }
 
-    @XmlAttribute(name="uk")
+    @XmlTransient
     public Boolean getUk() {
         return uk;
     }
