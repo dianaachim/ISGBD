@@ -102,7 +102,8 @@ public class Attribute implements Serializable {
 
     @Override
     public String toString() {
-        return name + "; " + type + "; " + pk + "; " + fk + "; " + uk + "; " + reference;
+        return this.name + ": " + this.type;
+//        return "attribute name = " + name + "; " + " type= " + type + "; pk= " + pk  + "; uk= " + uk + "; fk= " + fk + "; ref=" + reference ;
     }
 
     @XmlAttribute(name="notNull")

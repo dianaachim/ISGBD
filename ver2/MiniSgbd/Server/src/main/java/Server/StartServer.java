@@ -1,6 +1,6 @@
 package Server;
 
-import Repository.Repository;
+import Repository.*;
 import Repository.ConvertXML;
 import Server.Server;
 

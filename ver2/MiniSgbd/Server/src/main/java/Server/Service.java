@@ -1,7 +1,8 @@
 package Server;
 
 import Domain.*;
-import Repository.Repository;
+import Repository.*;
+import org.w3c.dom.Attr;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -9,10 +10,12 @@ import java.util.List;
 public class Service {
     private Database currentDatabase;
     private Repository repository;
+    private MongoDbConfig mongoDbConfig;
 
     public Service(Repository repository) {
         this.repository = repository;
         this.currentDatabase = this.repository.getLastDatabase();
+        this.mongoDbConfig = new MongoDbConfig(currentDatabase);
     }
 
     public String checkCommand(String command) throws Exception {
@@ -37,8 +40,10 @@ public class Service {
                 } else if (cmd[1].toLowerCase().equals("table")) {
 
                     return this.dropTable(cmd[2], currentDatabase.getDatabaseName());
+                } else {
+                    return "Wrong command";
                 }
-                break;
+//                break;
             case "use":
                 if (cmd[1].toLowerCase().equals("db")) {
                     if (this.repository.find(cmd[2]) != null) {
@@ -47,19 +52,65 @@ public class Service {
                     } else {
                         return "Database not found!";
                     }
+                } else {
+                    return "Wrong command!";
                 }
-                break;
+//                break;
             case "test":
                 return cmd[2];
             case "show":
                 if (cmd[1].toLowerCase().equals("dbs")) {
                     return this.repository.getDbsList().toString();
                 } else if (cmd[1].toLowerCase().equals("tables")) {
-                    return this.repository.getTables(this.currentDatabase.toString()).toString();
+                    return  this.showTables();
+//                    return this.repository.getTables(this.currentDatabase.toString()).toString();
+                }
+//                } else {
+//                    return "Wrong command!";
+//                }
+                    break;
+            case "insert":
+                if (cmd[1].toLowerCase().equals("table")) {
+                    return this.checkInsertCommand(cmd[2]);
                 }
                 break;
         }
         return "Wrong command";
+    }
+
+    private String checkInsertCommand(String cmd) throws Exception {
+        String[] table = cmd.split("\\.");
+        String tableName = table[0];
+        //the table in which we insert the values
+        Table tbl = this.repository.findTable(this.currentDatabase.getDatabaseName(), tableName);
+        ArrayList<Attribute> attrList = (ArrayList<Attribute>) tbl.getAttributeList();
+        String key = "";
+        String value = "";
+        for (String tb: table) {
+            if (tb.split("\\(")[0].equals("value")) {
+                String[] attrs = tb.split("[()]")[1].split(",");
+                int i = 0;
+                while (i < tbl.getAttributeList().size()) {
+                    if (attrList.get(i).getPk()==true) {
+                        if (key.equals("")) {
+                            key = attrs[i];
+                        } else {
+                            key += "#" + attrs[i];
+                        }
+                    } else {
+                        if ( value.equals("")) {
+                            value = attrs[i];
+                        } else {
+                            value = "#" + attrs[i];
+                        }
+                    }
+                    i+=1;
+                }
+
+            }
+        }
+        DTO dto = new DTO(key, value);
+        return this.insert(tableName, dto);
     }
 
     private String checkCreateIndexCommand(String cmd) throws Exception {
@@ -180,25 +231,27 @@ public class Service {
 
     }
 
+    public String showTables() throws Exception {
+        List<Table> tableList = this.repository.getTables(this.currentDatabase.getDatabaseName());
+        StringBuilder tableString = new StringBuilder();
+        for (Table table: tableList) {
+            tableString.append(table.toString());
+        }
+        return tableString.toString();
+    }
+
     public String createTable(String tableName, String databaseName, List<Attribute> attributes, PrimaryKeys pks, UniqueKeys uks) throws Exception {
         Table table = new Table();
         List<Index> idxList = new ArrayList<>();
-        String message = "";
         table.setTableName(tableName);
         table.setAttributeList(attributes);
         table.setPks(pks);
         table.setUks(uks);
         Index idx = new Index(table.getTableName() + ".ind", tableName, pks.getPrimaryKeys(), databaseName, true);
-//        idx.setTableName(table.getTableName());
-//        idx.setDatabaseName(databaseName);
-//        idx.setColumns(table.getPks().getPrimaryKeys());
-//        idx.setName(table.getTableName() + ".ind");
-//        idx.setUnique(true);
+
         idxList.add(idx);
         table.setIndexList(idxList);
-        message =  this.repository.saveTable(table, databaseName);
-//        message = message + " | " + this.createIndex(tableName + ".ind", tableName, pks.getPrimaryKeys(),  databaseName, true);
-        return message;
+        return this.repository.saveTable(table, databaseName);
     }
 
     public String dropTable(String tableName, String databaseName) throws Exception {
@@ -217,5 +270,12 @@ public class Service {
 
     public void setCurrentDatabase(String dbname) throws Exception {
         this.currentDatabase = this.repository.find(dbname);
+        this.mongoDbConfig.setDatabase(this.currentDatabase);
+    }
+
+    public String insert(String tbName,DTO dto) {
+
+        this.mongoDbConfig.insert(tbName, dto);
+        return "Value inserted";
     }
 }

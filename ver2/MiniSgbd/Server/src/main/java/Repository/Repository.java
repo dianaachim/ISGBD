@@ -151,6 +151,7 @@ public class Repository implements IRepository<String, Database> {
                 tableList.add(table);
                 this.find(dbName).setTablesList(tableList);
                 this.converter.jaxbObjectToXML(this.dbs);
+
                 return "Table successfully added!";
             } else {
                 return "Table already exists!";
