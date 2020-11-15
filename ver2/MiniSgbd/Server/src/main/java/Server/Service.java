@@ -74,8 +74,27 @@ public class Service {
                     return this.checkInsertCommand(cmd[2]);
                 }
                 break;
+            case "delete":
+                if (cmd[1].toLowerCase().equals("table")) {
+                    return this.checkDeleteCommand(cmd[2]);
+                }
+                break;
         }
         return "Wrong command";
+    }
+
+    private String checkDeleteCommand(String cmd) throws  Exception{
+        String[] table = cmd.split("\\.");
+        String tableName = table[0];
+        String key = "";
+        String value = "";
+        for (String tb: table) {
+            if (tb.split("\\(")[0].equals("value")) {
+                key = tb.split("[()]")[1];
+            }
+        }
+        DTO dto=new DTO(key,value);
+        return this.delete(tableName, dto);
     }
 
     private String checkInsertCommand(String cmd) throws Exception {
@@ -277,5 +296,10 @@ public class Service {
 
         this.mongoDbConfig.insert(tbName, dto);
         return "Value inserted";
+    }
+
+    public String delete(String tbName, DTO dto){
+        this.mongoDbConfig.delete(tbName,dto);
+        return "Value deleted";
     }
 }
