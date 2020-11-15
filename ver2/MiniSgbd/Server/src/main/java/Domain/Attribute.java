@@ -64,7 +64,7 @@ public class Attribute implements Serializable {
         this.length = length;
     }
 
-    @XmlAttribute(name="PrimaryKey")
+    @XmlTransient
     public Boolean getPk() {
         return pk;
     }
@@ -91,7 +91,7 @@ public class Attribute implements Serializable {
         this.uk = uk;
     }
 
-    @XmlAttribute(name="reference")
+    @XmlTransient
     public String getReference() {
         return reference;
     }

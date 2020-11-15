@@ -166,6 +166,7 @@ public class Service {
     public String checkCreateTableCommand(String cmd) throws Exception {
         List<String> primaryKeys = new ArrayList<>();
         List<String> uniqueKeys = new ArrayList<>();
+        List<ForeignKey> foreignKeys = new ArrayList<>();
         String[] table = cmd.split("\\.");
         ArrayList<Attribute> attributeArrayList = new ArrayList<>();
         String tableName = table[0];
@@ -215,6 +216,7 @@ public class Service {
                 case "ref":
                     String[] ref = tb.split("[()]")[1].split(",");
                     String tableRef = ref[1].split(" ")[1];
+
                     if (this.repository.findTable(this.currentDatabase.getDatabaseName(), tableRef) == null) {
                         return "Attribute reference not found";
                     } else {
@@ -222,6 +224,8 @@ public class Service {
                             if (a.getName().equals(ref[0])) {
                                 a.setFk(true);
                                 a.setReference(tableRef);
+                                ForeignKey fk = new ForeignKey(a.getName(), ref[0], tableRef, "FK_" + tableName + "_" + tableRef);
+                                foreignKeys.add(fk);
                             }
                         }
                     }
@@ -232,7 +236,9 @@ public class Service {
         pks.setPrimaryKeys(primaryKeys);
         UniqueKeys uks = new UniqueKeys();
         uks.setUniqueKeys(uniqueKeys);
-        return this.createTable(tableName, this.currentDatabase.getDatabaseName(), attributeArrayList, pks, uks);
+        ForeignKeys fks = new ForeignKeys();
+        fks.setForeignKeyList(foreignKeys);
+        return this.createTable(tableName, this.currentDatabase.getDatabaseName(), attributeArrayList, pks, uks, fks);
 
     }
 
@@ -259,13 +265,14 @@ public class Service {
         return tableString.toString();
     }
 
-    public String createTable(String tableName, String databaseName, List<Attribute> attributes, PrimaryKeys pks, UniqueKeys uks) throws Exception {
+    public String createTable(String tableName, String databaseName, List<Attribute> attributes, PrimaryKeys pks, UniqueKeys uks, ForeignKeys fks) throws Exception {
         Table table = new Table();
         List<Index> idxList = new ArrayList<>();
         table.setTableName(tableName);
         table.setAttributeList(attributes);
         table.setPks(pks);
         table.setUks(uks);
+        table.setFks(fks);
         Index idx = new Index(table.getTableName() + ".ind", tableName, pks.getPrimaryKeys(), databaseName, true);
 
         idxList.add(idx);
