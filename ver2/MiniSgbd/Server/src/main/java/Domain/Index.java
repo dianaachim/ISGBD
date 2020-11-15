@@ -1,20 +1,24 @@
 package Domain;
 
 import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlTransient;
 import java.io.Serializable;
+import java.util.List;
 
 public class Index implements Serializable {
     private String name;
     private String tableName;
-    private String columnName;
+//    private String columnName;
+    private List<String> columns;
     private String databaseName;
     private Boolean unique;
 
-    public Index(String name, String tableName, String columnName, String databaseName, Boolean unique) {
+    public Index(String name, String tableName, List<String> columnName, String databaseName, Boolean unique) {
         this.name = name;
         this.tableName = tableName;
-        this.columnName = columnName;
+        this.columns = columnName;
+//        this.columnName = columnName;
         this.databaseName = databaseName;
         this.unique = unique;
     }
@@ -42,14 +46,14 @@ public class Index implements Serializable {
         this.tableName = tableName;
     }
 
-    public String getColumnName() {
-        return columnName;
-    }
-
-    @XmlAttribute(name="column")
-    public void setColumnName(String columnName) {
-        this.columnName = columnName;
-    }
+//    public String getColumnName() {
+//        return columnName;
+//    }
+//
+//    @XmlAttribute(name="column")
+//    public void setColumnName(String columnName) {
+//        this.columnName = columnName;
+//    }
 
     public String getDatabaseName() {
         return databaseName;
@@ -67,5 +71,14 @@ public class Index implements Serializable {
     @XmlAttribute(name="isUnique")
     public void setUnique(Boolean unique) {
         this.unique = unique;
+    }
+
+    public List<String> getColumns() {
+        return columns;
+    }
+
+    @XmlElement(name="IndexAttribute")
+    public void setColumns(List<String> columns) {
+        this.columns = columns;
     }
 }

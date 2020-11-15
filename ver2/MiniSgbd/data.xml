@@ -3,27 +3,25 @@
     <Database databaseName="School">
         <Table TableName="Classrooms">
             <Attribute fk="true" length="20" name="cid" notNull="true" PrimaryKey="false" reference="" type="int" uk="false"/>
-            <Index column="id" name="id" isUnique="true"/>
+            <Index name="id" isUnique="true"/>
         </Table>
         <Table TableName="Teachers"/>
     </Database>
-    <Database databaseName="Garden">
-        <Table TableName="Flower">
-            <Attribute fk="false" length="0" name="id" notNull="false" PrimaryKey="false" reference="" type="int" uk="false"/>
-            <Attribute fk="false" length="0" name="name" notNull="false" PrimaryKey="false" reference="" type="string" uk="false"/>
-            <Attribute fk="false" length="0" name="type" notNull="false" PrimaryKey="false" reference="" type="string" uk="false"/>
-        </Table>
-        <Table TableName="test">
-            <Attribute fk="false" length="0" name="tid" notNull="true" PrimaryKey="true" reference="" type="int" uk="true"/>
-            <Attribute fk="false" length="0" name="name" notNull="false" PrimaryKey="false" reference="" type="string" uk="false"/>
-            <Attribute fk="true" length="0" name="id" notNull="false" PrimaryKey="false" reference="Flower" type="int" uk="false"/>
-        </Table>
-    </Database>
     <Database databaseName="HP">
-        <Table TableName="test">
-            <Attribute fk="false" length="0" name="tid" notNull="true" PrimaryKey="true" reference="" type="int" uk="true"/>
-            <Attribute fk="false" length="0" name="tname" notNull="false" PrimaryKey="false" reference="" type="string" uk="false"/>
-            <Index column="tid" name="tid" isUnique="true"/>
+        <Table TableName="hello">
+            <Attribute fk="false" length="0" name="hid" notNull="true" PrimaryKey="true" reference="" type="char" uk="false"/>
+            <Attribute fk="false" length="0" name="name" notNull="false" PrimaryKey="false" reference="" type="varchar" uk="false"/>
+            <Index name="hello" isUnique="false">
+                <IndexAttribute>hid</IndexAttribute>
+                <IndexAttribute>name</IndexAttribute>
+            </Index>
+            <Index name="hid" isUnique="true">
+                <IndexAttribute>hid</IndexAttribute>
+            </Index>
+        </Table>
+        <Table TableName="testpk">
+            <Attribute fk="false" length="0" name="tpid" notNull="true" PrimaryKey="true" reference="" type="char" uk="true"/>
+            <Attribute fk="false" length="0" name="name" notNull="false" PrimaryKey="false" reference="" type="varchar" uk="false"/>
         </Table>
     </Database>
 </Databases>
