@@ -1,5 +1,7 @@
 package Domain;
 
+import org.w3c.dom.Attr;
+
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlTransient;
@@ -12,13 +14,16 @@ public class Table implements Serializable {
     private String databaseName;
     private List<Attribute> attributeList;
     private List<Index> indexList;
-
+    private PrimaryKeys pks;
+    private UniqueKeys uks;
 
     public Table(String tableName, String databaseName) {
         this.tableName = tableName;
         this.databaseName = databaseName;
         this.attributeList=new ArrayList<>();
         this.indexList=new ArrayList<>();
+        this.pks = new PrimaryKeys();
+        this.uks = new UniqueKeys();
     }
 
     public Table() {}
@@ -52,7 +57,11 @@ public class Table implements Serializable {
 
     @Override
     public String toString() {
-        return tableName;
+        StringBuilder attributes = new StringBuilder();
+        for(Attribute attrs: this.attributeList) {
+            attributes.append(attrs.toString()).append(" | ");
+        }
+        return tableName + "[" + attributes + " ] " + "\n";
     }
 
     public String getDatabaseName() {
@@ -62,5 +71,23 @@ public class Table implements Serializable {
     @XmlTransient
     public void setDatabaseName(String databaseName) {
         this.databaseName = databaseName;
+    }
+
+    public PrimaryKeys getPks() {
+        return pks;
+    }
+
+    @XmlElement(name="PrimaryKeys")
+    public void setPks(PrimaryKeys pks) {
+        this.pks = pks;
+    }
+
+    public UniqueKeys getUks() {
+        return uks;
+    }
+
+    @XmlElement(name="UniqueKeys")
+    public void setUks(UniqueKeys uks) {
+        this.uks = uks;
     }
 }

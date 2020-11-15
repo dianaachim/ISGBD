@@ -25,5 +25,8 @@ dependencies {
     testCompile group: 'org.springframework.boot', name: 'spring-boot-starter-test', version: '2.3.4.RELEASE'
     compile group: 'com.sun.xml.bind', name: 'jaxb-impl', version: '2.3.2'
     compile group: 'com.sun.xml.bind', name: 'jaxb-core', version: '2.3.0.1'
+    // https://mvnrepository.com/artifact/org.mongodb/mongo-java-driver
+    compile group: 'org.mongodb', name: 'mongo-java-driver', version: '3.12.7'
+
 
 }

@@ -9,6 +9,7 @@ import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 import java.io.File;
+import java.io.IOException;
 import java.io.StringWriter;
 import java.util.ArrayList;
 
@@ -31,10 +32,19 @@ public class ConvertXML {
             //Print XML String to Console
             StringWriter sw = new StringWriter();
 
-            File file = new File( "data.xml" );
+            File file = new File( "date.xml" );
+
+            try {
+                if (!file.exists()) {
+                    file.createNewFile();
+                }
+
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
 
 
-            //Write XML to StringWriter
+        //Write XML to StringWriter
             jaxbMarshaller.marshal(dbs, file);
 
             //Verify XML Content
@@ -45,7 +55,15 @@ public class ConvertXML {
 
     public  Databases jaxbXMLToObject() throws JAXBException {
             Databases db;
-            File file = new File("data.xml");
+            File file = new File("date.xml");
+//            try {
+//                if (!file.exists()) {
+//                    file.createNewFile();
+//                }
+//
+//            } catch (IOException e) {
+//                e.printStackTrace();
+//            }
             JAXBContext jaxbContext = JAXBContext.newInstance(Databases.class);
             Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
             db = (Databases) unmarshaller.unmarshal(file);
