@@ -163,7 +163,17 @@ public class Service {
         return this.createIndex(indexName, tableName, indexColumns, this.currentDatabase.getDatabaseName(), unique);
     }
 
+    public boolean validateAttributeType(String type) {
+        List<String> types = new ArrayList<>();
+        types.add("int");
+        types.add("varchar");
+        types.add("datetime");
+        types.add("float");
+        return types.contains(type);
+    }
+
     public String checkCreateTableCommand(String cmd) throws Exception {
+
         List<String> primaryKeys = new ArrayList<>();
         List<String> uniqueKeys = new ArrayList<>();
         List<ForeignKey> foreignKeys = new ArrayList<>();
@@ -179,10 +189,28 @@ public class Service {
                         String[] att = attribute.split(" ");
                         if (att[0].equals("")) {
                             a.setName(att[1]);
-                            a.setType(att[2]);
+                            String[] type = att[2].split("\\[");
+                            if (this.validateAttributeType(type[0])) {
+                                a.setType(type[0]);
+                                if (type.length > 1) {
+                                    a.setLength(Integer.parseInt(type[1].split("\\]")[0]));
+                                }
+                            } else {
+                                return "Attribute types can only be varchar, int, float, datetime";
+                            }
+//                            a.setType(att[2]);
                         } else {
                             a.setName(att[0]);
-                            a.setType(att[1]);
+                            String[] type = att[1].split("\\[");
+                            if (this.validateAttributeType(type[0].split("\\]")[0])) {
+                                a.setType(type[0]);
+                                if (type.length > 1) {
+                                    a.setLength(Integer.parseInt(type[1]));
+                                }
+                            } else {
+                                return "Attribute types can only be varchar, int, float, datetime";
+                            }
+//                            a.setType(att[1]);
                         }
                         attributeArrayList.add(a);
                     }
