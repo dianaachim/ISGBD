@@ -26,12 +26,28 @@ public class MongoDbConfig {
     }
 
     public void insert(String tableName, DTO dto) {
-        MongoCollection<Document> dbCollection = db.getCollection(tableName);
-        Document document = new Document();
+        try {
+            MongoCollection<Document> dbCollection = db.getCollection(tableName);
+            Document document = new Document();
 //        BasicDBObject document = new BasicDBObject();
-        document.put("_id", dto.getKey());
-        document.put("value", dto.getValue());
-        dbCollection.insertOne(document);
+            document.put("_id", dto.getKey());
+            document.put("value", dto.getValue());
+            dbCollection.insertOne(document);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void insertIndex(String fileName, DTO dto) {
+        try {
+            MongoCollection<Document> dbCollection = db.getCollection(fileName);
+            Document document = new Document();
+            document.put("_id", dto.getKey());
+            document.put("value", dto.getValue());
+            dbCollection.insertOne(document);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     public void delete(String tableName, DTO dto){
