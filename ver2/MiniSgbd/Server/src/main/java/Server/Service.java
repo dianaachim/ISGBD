@@ -74,8 +74,27 @@ public class Service {
                     return this.checkInsertCommand(cmd[2]);
                 }
                 break;
+            case "delete":
+                if (cmd[1].toLowerCase().equals("table")) {
+                    return this.checkDeleteCommand(cmd[2]);
+                }
+                break;
         }
         return "Wrong command";
+    }
+
+    private String checkDeleteCommand(String cmd) throws  Exception{
+        String[] table = cmd.split("\\.");
+        String tableName = table[0];
+        String key = "";
+        String value = "";
+        for (String tb: table) {
+            if (tb.split("\\(")[0].equals("value")) {
+                key = tb.split("[()]")[1];
+            }
+        }
+        DTO dto=new DTO(key,value);
+        return this.delete(tableName, dto);
     }
 
     private String checkInsertCommand(String cmd) throws Exception {
@@ -144,9 +163,20 @@ public class Service {
         return this.createIndex(indexName, tableName, indexColumns, this.currentDatabase.getDatabaseName(), unique);
     }
 
+    public boolean validateAttributeType(String type) {
+        List<String> types = new ArrayList<>();
+        types.add("int");
+        types.add("varchar");
+        types.add("datetime");
+        types.add("float");
+        return types.contains(type);
+    }
+
     public String checkCreateTableCommand(String cmd) throws Exception {
+
         List<String> primaryKeys = new ArrayList<>();
         List<String> uniqueKeys = new ArrayList<>();
+        List<ForeignKey> foreignKeys = new ArrayList<>();
         String[] table = cmd.split("\\.");
         ArrayList<Attribute> attributeArrayList = new ArrayList<>();
         String tableName = table[0];
@@ -159,10 +189,28 @@ public class Service {
                         String[] att = attribute.split(" ");
                         if (att[0].equals("")) {
                             a.setName(att[1]);
-                            a.setType(att[2]);
+                            String[] type = att[2].split("\\[");
+                            if (this.validateAttributeType(type[0])) {
+                                a.setType(type[0]);
+                                if (type.length > 1) {
+                                    a.setLength(Integer.parseInt(type[1].split("\\]")[0]));
+                                }
+                            } else {
+                                return "Attribute types can only be varchar, int, float, datetime";
+                            }
+//                            a.setType(att[2]);
                         } else {
                             a.setName(att[0]);
-                            a.setType(att[1]);
+                            String[] type = att[1].split("\\[");
+                            if (this.validateAttributeType(type[0].split("\\]")[0])) {
+                                a.setType(type[0]);
+                                if (type.length > 1) {
+                                    a.setLength(Integer.parseInt(type[1]));
+                                }
+                            } else {
+                                return "Attribute types can only be varchar, int, float, datetime";
+                            }
+//                            a.setType(att[1]);
                         }
                         attributeArrayList.add(a);
                     }
@@ -196,6 +244,7 @@ public class Service {
                 case "ref":
                     String[] ref = tb.split("[()]")[1].split(",");
                     String tableRef = ref[1].split(" ")[1];
+
                     if (this.repository.findTable(this.currentDatabase.getDatabaseName(), tableRef) == null) {
                         return "Attribute reference not found";
                     } else {
@@ -203,6 +252,8 @@ public class Service {
                             if (a.getName().equals(ref[0])) {
                                 a.setFk(true);
                                 a.setReference(tableRef);
+                                ForeignKey fk = new ForeignKey(a.getName(), ref[0], tableRef, "FK_" + tableName + "_" + tableRef);
+                                foreignKeys.add(fk);
                             }
                         }
                     }
@@ -213,7 +264,9 @@ public class Service {
         pks.setPrimaryKeys(primaryKeys);
         UniqueKeys uks = new UniqueKeys();
         uks.setUniqueKeys(uniqueKeys);
-        return this.createTable(tableName, this.currentDatabase.getDatabaseName(), attributeArrayList, pks, uks);
+        ForeignKeys fks = new ForeignKeys();
+        fks.setForeignKeyList(foreignKeys);
+        return this.createTable(tableName, this.currentDatabase.getDatabaseName(), attributeArrayList, pks, uks, fks);
 
     }
 
@@ -240,13 +293,14 @@ public class Service {
         return tableString.toString();
     }
 
-    public String createTable(String tableName, String databaseName, List<Attribute> attributes, PrimaryKeys pks, UniqueKeys uks) throws Exception {
+    public String createTable(String tableName, String databaseName, List<Attribute> attributes, PrimaryKeys pks, UniqueKeys uks, ForeignKeys fks) throws Exception {
         Table table = new Table();
         List<Index> idxList = new ArrayList<>();
         table.setTableName(tableName);
         table.setAttributeList(attributes);
         table.setPks(pks);
         table.setUks(uks);
+        table.setFks(fks);
         Index idx = new Index(table.getTableName() + ".ind", tableName, pks.getPrimaryKeys(), databaseName, true);
 
         idxList.add(idx);
@@ -277,5 +331,10 @@ public class Service {
 
         this.mongoDbConfig.insert(tbName, dto);
         return "Value inserted";
+    }
+
+    public String delete(String tbName, DTO dto){
+        this.mongoDbConfig.delete(tbName,dto);
+        return "Value deleted";
     }
 }

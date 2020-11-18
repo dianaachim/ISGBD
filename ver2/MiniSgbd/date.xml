@@ -2,8 +2,8 @@
 <Databases>
     <Database databaseName="HP">
         <Table TableName="hello">
-            <Attribute length="0" name="hid" notNull="true" PrimaryKey="true" reference="" type="int"/>
-            <Attribute length="0" name="hname" notNull="false" PrimaryKey="false" reference="" type="string"/>
+            <Attribute length="0" name="hid" notNull="true" type="int"/>
+            <Attribute length="0" name="hname" notNull="false" type="string"/>
             <Index name="hello.ind" isUnique="true">
                 <IndexAttribute>hid</IndexAttribute>
             </Index>
@@ -15,8 +15,8 @@
             </UniqueKeys>
         </Table>
         <Table TableName="test">
-            <Attribute length="0" name="tid" notNull="true" PrimaryKey="true" reference="" type="int"/>
-            <Attribute length="0" name="hid" notNull="false" PrimaryKey="false" reference="hello" type="int"/>
+            <Attribute length="0" name="tid" notNull="true" type="int"/>
+            <Attribute length="0" name="hid" notNull="false" type="int"/>
             <Index name="test.ind" isUnique="true">
                 <IndexAttribute>tid</IndexAttribute>
             </Index>
@@ -26,5 +26,56 @@
             <UniqueKeys/>
         </Table>
     </Database>
-    <Database databaseName="Naruto"/>
+    <Database databaseName="Naruto">
+        <Table TableName="Ninja">
+            <Attribute length="0" name="nid" notNull="true" type="int"/>
+            <Attribute length="0" name="name" notNull="true" type="string"/>
+            <Attribute length="0" name="age" notNull="false" type="int"/>
+            <Attribute length="0" name="address" notNull="false" type="string"/>
+            <ForeignKeys/>
+            <Index name="Ninja.ind" isUnique="true">
+                <IndexAttribute>nid</IndexAttribute>
+            </Index>
+            <PrimaryKeys>
+                <PkAttribute>nid</PkAttribute>
+            </PrimaryKeys>
+            <UniqueKeys>
+                <UniqueAttribute>nid</UniqueAttribute>
+                <UniqueAttribute>name</UniqueAttribute>
+            </UniqueKeys>
+        </Table>
+        <Table TableName="Teams">
+            <Attribute length="0" name="tid" notNull="true" type="int"/>
+            <Attribute length="0" name="tname" notNull="false" type="string"/>
+            <Attribute length="0" name="nid" notNull="false" type="int"/>
+            <ForeignKeys>
+                <ForeignKey FkFile="FK_Teams_Ninja">
+                    <FkAttribute>nid</FkAttribute>
+                    <RefAttribute>nid</RefAttribute>
+                    <RefTable>Ninja</RefTable>
+                </ForeignKey>
+            </ForeignKeys>
+            <Index name="Teams.ind" isUnique="true">
+                <IndexAttribute>tid</IndexAttribute>
+            </Index>
+            <PrimaryKeys>
+                <PkAttribute>tid</PkAttribute>
+            </PrimaryKeys>
+            <UniqueKeys>
+                <UniqueAttribute>tid</UniqueAttribute>
+            </UniqueKeys>
+        </Table>
+        <Table TableName="test2">
+            <Attribute length="0" name="tid2" notNull="true" type="int"/>
+            <Attribute length="225" name="tname" notNull="false" type="varchar"/>
+            <ForeignKeys/>
+            <Index name="test2.ind" isUnique="true">
+                <IndexAttribute>tid2</IndexAttribute>
+            </Index>
+            <PrimaryKeys>
+                <PkAttribute>tid2</PkAttribute>
+            </PrimaryKeys>
+            <UniqueKeys/>
+        </Table>
+    </Database>
 </Databases>
