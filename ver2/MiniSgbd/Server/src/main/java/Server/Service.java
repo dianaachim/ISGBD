@@ -4,8 +4,11 @@ import Domain.*;
 import Repository.*;
 import org.w3c.dom.Attr;
 
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class Service {
     private Database currentDatabase;
@@ -100,27 +103,29 @@ public class Service {
     private String checkInsertCommand(String cmd) throws Exception {
         String[] table = cmd.split("\\.");
         String tableName = table[0];
+        String[] attrs = new String[100];
         //the table in which we insert the values
         Table tbl = this.repository.findTable(this.currentDatabase.getDatabaseName(), tableName);
         ArrayList<Attribute> attrList = (ArrayList<Attribute>) tbl.getAttributeList();
-        String key = "";
-        String value = "";
+        StringBuilder key = new StringBuilder();
+        StringBuilder value = new StringBuilder();
+
         for (String tb: table) {
             if (tb.split("\\(")[0].equals("value")) {
-                String[] attrs = tb.split("[()]")[1].split(",");
+                attrs = tb.split("[()]")[1].split(",");
                 int i = 0;
                 while (i < tbl.getAttributeList().size()) {
-                    if (attrList.get(i).getPk()==true) {
-                        if (key.equals("")) {
-                            key = attrs[i];
+                    if (attrList.get(i).getPk()) {
+                        if (key.toString().equals("")) {
+                            key = new StringBuilder(attrs[i]);
                         } else {
-                            key += "#" + attrs[i];
+                            key.append("#").append(attrs[i]);
                         }
                     } else {
-                        if ( value.equals("")) {
-                            value = attrs[i];
+                        if ( value.toString().equals("")) {
+                            value = new StringBuilder(attrs[i]);
                         } else {
-                            value = "#" + attrs[i];
+                            value.append("#").append(attrs[i]);
                         }
                     }
                     i+=1;
@@ -128,8 +133,40 @@ public class Service {
 
             }
         }
-        DTO dto = new DTO(key, value);
+        DTO dto = new DTO(key.toString(), value.toString());
+        if (this.mongoDbConfig.getValueByKey(tableName, key.toString())==null) {
+            String message  = this.insertUniqueIndexes(attrList, attrs, key.toString(), tableName);
+            if (message.equals("Duplicate key!")) {
+                return "Duplicate unique key";
+            }
+        }
+//        String message = this.mongoDbConfig.insertIndex("UK_" + tableName, dtoUK);
+
         return this.insert(tableName, dto);
+    }
+
+    private String insertUniqueIndexes(ArrayList<Attribute> attrList, String[] attrs, String pk, String tableName) throws UnsupportedEncodingException {
+        int i = 0;
+        boolean ok = true;
+        Map<String, DTO> dtoMap = new HashMap<>();
+        while (i < attrList.size()) {
+            if (attrList.get(i).getUk() && !attrList.get(i).getPk()) {
+                String uk = attrs[i];
+                DTO dto = new DTO(uk, pk);
+                dtoMap.put("UK_"+tableName+"_"+attrList.get(i).getName(), dto);
+                if (this.mongoDbConfig.getValueByKey("UK_"+tableName+"_"+attrList.get(i).getName(), uk)!=null) {
+                    ok = false;
+                    return "Duplicate key!";
+                }
+            }
+            i+=1;
+        }
+        if (ok) {
+            for (String file : dtoMap.keySet()) {
+                this.mongoDbConfig.insertIndex(file, dtoMap.get(file));
+            }
+        }
+        return "Index files added!";
     }
 
     private String checkCreateIndexCommand(String cmd) throws Exception {
@@ -308,6 +345,39 @@ public class Service {
         return this.repository.saveTable(table, databaseName);
     }
 
+//    public void insertIndexFile(Table table) {
+//        DTO dtoPK = new DTO();
+//        String keyPK  = "";
+//        String valuePK = "";
+//
+//        DTO dtoUK = new DTO();
+//        String keyUK  = "";
+//        String valueUK = "";
+//
+//        DTO dtoFK = new DTO();
+//        String keyFK  = "";
+//        String valueFK = "";
+//
+//        String pks = "";
+//
+//        for (String pk: table.getPks().getPrimaryKeys()) {
+//            if (pks.equals("")) {
+//                pks += pk;
+//            } else {
+//                pks += "#" + pk;
+//            }
+//        }
+//
+//        for (String uk: table.getUks().getUniqueKeys()) {
+//            if (valueUK.equals("")) {
+//                valueUK += uk;
+//            } else {
+//                valueUK += "#" + uk;
+//            }
+//
+//        }
+//    }
+
     public String dropTable(String tableName, String databaseName) throws Exception {
         return this.repository.deleteTable(databaseName, tableName);
     }
@@ -329,8 +399,8 @@ public class Service {
 
     public String insert(String tbName,DTO dto) {
 
-        this.mongoDbConfig.insert(tbName, dto);
-        return "Value inserted";
+        return this.mongoDbConfig.insert(tbName, dto);
+//        return "Value inserted";
     }
 
     public String delete(String tbName, DTO dto){
