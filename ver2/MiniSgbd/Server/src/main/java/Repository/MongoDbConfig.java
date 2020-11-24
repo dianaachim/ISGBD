@@ -84,4 +84,14 @@ public class MongoDbConfig {
         return myCollection.find(eq("_id", k)).first();
 
     }
+
+    public Document getDocumentByValue(String collectionName, String value) {
+        MongoCollection<Document> myCollection = db.getCollection(collectionName);
+        return myCollection.find(eq("value", value)).first();
+    }
+
+    public void deleteByDocument(String tableName, Document document){
+        MongoCollection<Document> dbCollection = db.getCollection(tableName);
+        dbCollection.deleteOne(document);
+    }
 }

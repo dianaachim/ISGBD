@@ -2,6 +2,7 @@ package Server;
 
 import Domain.*;
 import Repository.*;
+import org.bson.Document;
 import org.w3c.dom.Attr;
 
 import java.io.UnsupportedEncodingException;
@@ -345,38 +346,6 @@ public class Service {
         return this.repository.saveTable(table, databaseName);
     }
 
-//    public void insertIndexFile(Table table) {
-//        DTO dtoPK = new DTO();
-//        String keyPK  = "";
-//        String valuePK = "";
-//
-//        DTO dtoUK = new DTO();
-//        String keyUK  = "";
-//        String valueUK = "";
-//
-//        DTO dtoFK = new DTO();
-//        String keyFK  = "";
-//        String valueFK = "";
-//
-//        String pks = "";
-//
-//        for (String pk: table.getPks().getPrimaryKeys()) {
-//            if (pks.equals("")) {
-//                pks += pk;
-//            } else {
-//                pks += "#" + pk;
-//            }
-//        }
-//
-//        for (String uk: table.getUks().getUniqueKeys()) {
-//            if (valueUK.equals("")) {
-//                valueUK += uk;
-//            } else {
-//                valueUK += "#" + uk;
-//            }
-//
-//        }
-//    }
 
     public String dropTable(String tableName, String databaseName) throws Exception {
         return this.repository.deleteTable(databaseName, tableName);
@@ -403,8 +372,19 @@ public class Service {
 //        return "Value inserted";
     }
 
-    public String delete(String tbName, DTO dto){
+    public String delete(String tbName, DTO dto) throws Exception {
+        this.safeDelete(this.repository.findTable(this.currentDatabase.getDatabaseName(), tbName), dto);
         this.mongoDbConfig.delete(tbName,dto);
         return "Value deleted";
+    }
+
+    public void safeDelete(Table table, DTO dto) {
+        for (String uk: table.getUks().getUniqueKeys()) {
+            String tableName = "UK_" + table.getTableName() + "_" + uk;
+            Document document = this.mongoDbConfig.getDocumentByValue(tableName, dto.getKey());
+            if (document != null) {
+                this.mongoDbConfig.deleteByDocument(tableName, document);
+            }
+        }
     }
 }
