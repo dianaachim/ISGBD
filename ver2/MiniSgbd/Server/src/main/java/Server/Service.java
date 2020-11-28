@@ -140,6 +140,10 @@ public class Service {
             if (message.equals("Duplicate key!")) {
                 return "Duplicate unique key";
             }
+            message = this.insertForeignKeyIndexes(attrList, attrs, key.toString(), tableName);
+            if (message.equals("Fk ref not found!")) {
+                return "Fk not found in reference table!";
+            }
         }
 //        String message = this.mongoDbConfig.insertIndex("UK_" + tableName, dtoUK);
 
@@ -166,6 +170,34 @@ public class Service {
             for (String file : dtoMap.keySet()) {
                 this.mongoDbConfig.insertIndex(file, dtoMap.get(file));
             }
+        }
+        return "Index files added!";
+    }
+
+    private String insertForeignKeyIndexes(ArrayList<Attribute> attrList, String[] attrs, String pk, String tableName) throws UnsupportedEncodingException {
+        int i = 0;
+        boolean ok = true;
+        Map<String, DTO> dtoMap = new HashMap<>();
+        while (i < attrList.size()) {
+            if (attrList.get(i).getFk()) {
+                String fk = attrs[i];
+                String collectionName = "FK_" + tableName + "_" + attrList.get(i).getReference();
+                //check if the foreign key exists in the ref table
+                if (this.mongoDbConfig.getValueByKey(attrList.get(i).getReference(), fk)==null) {
+                    return "Fk ref not found!";
+                }
+                if (this.mongoDbConfig.getValueByKey(collectionName, fk)!=null) {
+                    Document doc = this.mongoDbConfig.getValueByKey(collectionName, fk);
+                    //updatam documentul
+                } else {
+                    DTO dto = new DTO(fk, pk);
+                    dtoMap.put(collectionName, dto);
+                }
+            }
+            i+=1;
+        }
+        for (String file : dtoMap.keySet()) {
+            this.mongoDbConfig.insertIndex(file, dtoMap.get(file));
         }
         return "Index files added!";
     }
@@ -339,9 +371,9 @@ public class Service {
         table.setPks(pks);
         table.setUks(uks);
         table.setFks(fks);
-        Index idx = new Index(table.getTableName() + ".ind", tableName, pks.getPrimaryKeys(), databaseName, true);
+//        Index idx = new Index(table.getTableName() + ".ind", tableName, pks.getPrimaryKeys(), databaseName, true);
 
-        idxList.add(idx);
+//        idxList.add(idx);
         table.setIndexList(idxList);
         return this.repository.saveTable(table, databaseName);
     }

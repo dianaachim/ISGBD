@@ -19,9 +19,9 @@
         </Table>
         <Table TableName="Wizard">
             <Attribute fk="false" length="0" name="wid" notNull="true" pk="true" ref="" type="int" uk="true"/>
-            <Attribute fk="false" length="225" name="wname" notNull="false" pk="false" ref="" type="varchar" uk="false"/>
-            <Attribute fk="false" length="0" name="hid" notNull="true" pk="false" ref="" type="int" uk="true"/>
+            <Attribute fk="false" length="225" name="wname" notNull="true" pk="false" ref="" type="varchar" uk="true"/>
             <Attribute fk="true" length="0" name="houseId" notNull="false" pk="false" ref="House" type="int" uk="false"/>
+            <Attribute fk="false" length="225" name="address" notNull="false" pk="false" ref="" type="varchar" uk="false"/>
             <ForeignKeys>
                 <ForeignKey FkFile="FK_Wizard_House">
                     <FkAttribute>houseId</FkAttribute>
@@ -29,15 +29,12 @@
                     <RefTable>House</RefTable>
                 </ForeignKey>
             </ForeignKeys>
-            <Index name="Wizard.ind" isUnique="true">
-                <IndexAttribute>wid</IndexAttribute>
-            </Index>
             <PrimaryKeys>
                 <PkAttribute>wid</PkAttribute>
             </PrimaryKeys>
             <UniqueKeys>
                 <UniqueAttribute>wid</UniqueAttribute>
-                <UniqueAttribute>hid</UniqueAttribute>
+                <UniqueAttribute>wname</UniqueAttribute>
             </UniqueKeys>
         </Table>
     </Database>
