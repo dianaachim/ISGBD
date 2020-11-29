@@ -217,45 +217,28 @@ public class Service {
             int i = 0;
             String key = "";
             String valueIndex = "";
-            if (index.getUnique()) {
-                while (i<attrList.size()) {
-                    if (index.getColumns().contains(attrList.get(i).getName())) {
-                        if (key.equals("")) {
-                            key+=attrs[i];
-                        } else {
-                            key += "#" + attrs[i];
-                        }
+            while (i<attrList.size()) {
+                if (index.getColumns().contains(attrList.get(i).getName())) {
+                    if (key.equals("")) {
+                        key+=attrs[i];
+                    } else {
+                        key += "#" + attrs[i];
                     }
-                    i+=1;
                 }
+                i+=1;
+            }
+            if (index.getUnique() && this.mongoDbConfig.getValueByKey(index.getName(), key)!=null) {
+                return "Duplicate key!";
+            } else if (!index.getUnique() && this.mongoDbConfig.getValueByKey(index.getName(), key)!=null) {
+                Document doc = this.mongoDbConfig.getValueByKey(index.getName(), key);
+                //updatam documentul
+                String value = (String) doc.get("value");
+                value += "#" + pk;
+                DTO dto = new DTO(key, value);
+                this.mongoDbConfig.update(index.getName(), dto);
+            } else {
                 DTO dto = new DTO(key, pk);
                 dtoMap.put(index.getName(), dto);
-                if (this.mongoDbConfig.getValueByKey(index.getName(), key)!=null) {
-                    return "Duplicate key!";
-                }
-            } else { //non-unique index
-                while (i<attrList.size()) {
-                    if (index.getColumns().contains(attrList.get(i).getName())) {
-                        //daca atributul se afla printre coloanele din index
-                        if (key.equals("")) {
-                            key+=attrs[i];
-                        } else {
-                            key += "#" + attrs[i];
-                        }
-                    }
-                    i+=1;
-                }
-                if (this.mongoDbConfig.getValueByKey(index.getName(), key)!=null) {
-                    Document doc = this.mongoDbConfig.getValueByKey(index.getName(), key);
-                    //updatam documentul
-                    String value = (String) doc.get("value");
-                    value += "#" + pk;
-                    DTO dto = new DTO(key, value);
-                    this.mongoDbConfig.update(index.getName(), dto);
-                } else {
-                    DTO dto = new DTO(key, pk);
-                    dtoMap.put(index.getName(), dto);
-                }
             }
 
         }
