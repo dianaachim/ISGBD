@@ -468,12 +468,29 @@ public class Service {
     }
 
     public String delete(String tbName, DTO dto) throws Exception {
-        this.safeDelete(this.repository.findTable(this.currentDatabase.getDatabaseName(), tbName), dto);
-        this.mongoDbConfig.delete(tbName,dto);
-        return "Value deleted";
+        if (this.safeDelete(this.repository.findTable(this.currentDatabase.getDatabaseName(), tbName), dto)) {
+            this.mongoDbConfig.delete(tbName,dto);
+            return "Value deleted";
+        } else {
+            return "Attribute referenced in another table";
+        }
+
     }
 
-    public void safeDelete(Table table, DTO dto) {
+    public boolean safeDelete(Table table, DTO dto) throws Exception {
+        //se verifica referintele
+        ArrayList<Table> tables = (ArrayList<Table>) this.repository.getTables(this.currentDatabase.getDatabaseName());
+        for (Table dbTable: tables) {
+            for (ForeignKey fk: dbTable.getFks().getForeignKeyList()) {
+                if (fk.getRefTable().equals(table.getTableName())) {
+                    if (this.mongoDbConfig.getValueByKey(fk.getFkfile(), dto.getKey())!= null) {
+                        //daca exista referinta la dto in alt tabel
+                        return false;
+                    }
+                }
+            }
+        }
+        //se sterg fisierele de uk
         for (String uk: table.getUks().getUniqueKeys()) {
             String tableName = "UK_" + table.getTableName() + "_" + uk;
             Document document = this.mongoDbConfig.getDocumentByValue(tableName, dto.getKey());
@@ -481,5 +498,6 @@ public class Service {
                 this.mongoDbConfig.deleteByDocument(tableName, document);
             }
         }
+        return true;
     }
 }
