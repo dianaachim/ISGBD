@@ -2,10 +2,14 @@ package Server;
 
 import Domain.*;
 import Repository.*;
+import org.bson.Document;
 import org.w3c.dom.Attr;
 
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class Service {
     private Database currentDatabase;
@@ -100,27 +104,29 @@ public class Service {
     private String checkInsertCommand(String cmd) throws Exception {
         String[] table = cmd.split("\\.");
         String tableName = table[0];
+        String[] attrs = new String[100];
         //the table in which we insert the values
         Table tbl = this.repository.findTable(this.currentDatabase.getDatabaseName(), tableName);
         ArrayList<Attribute> attrList = (ArrayList<Attribute>) tbl.getAttributeList();
-        String key = "";
-        String value = "";
+        StringBuilder key = new StringBuilder();
+        StringBuilder value = new StringBuilder();
+
         for (String tb: table) {
             if (tb.split("\\(")[0].equals("value")) {
-                String[] attrs = tb.split("[()]")[1].split(",");
+                attrs = tb.split("[()]")[1].split(",");
                 int i = 0;
                 while (i < tbl.getAttributeList().size()) {
-                    if (attrList.get(i).getPk()==true) {
-                        if (key.equals("")) {
-                            key = attrs[i];
+                    if (attrList.get(i).getPk()) {
+                        if (key.toString().equals("")) {
+                            key = new StringBuilder(attrs[i]);
                         } else {
-                            key += "#" + attrs[i];
+                            key.append("#").append(attrs[i]);
                         }
                     } else {
-                        if ( value.equals("")) {
-                            value = attrs[i];
+                        if ( value.toString().equals("")) {
+                            value = new StringBuilder(attrs[i]);
                         } else {
-                            value = "#" + attrs[i];
+                            value.append("#").append(attrs[i]);
                         }
                     }
                     i+=1;
@@ -128,8 +134,118 @@ public class Service {
 
             }
         }
-        DTO dto = new DTO(key, value);
+        DTO dto = new DTO(key.toString(), value.toString());
+        if (this.mongoDbConfig.getValueByKey(tableName, key.toString())==null) {
+            String message  = this.insertUniqueIndexes(attrList, attrs, key.toString(), tableName);
+            if (message.equals("Duplicate key!")) {
+                return "Duplicate unique key";
+            }
+            message = this.insertForeignKeyIndexes(attrList, attrs, key.toString(), tableName);
+            if (message.equals("Fk ref not found!")) {
+                return "Fk not found in reference table!";
+            }
+            message = this.insertUserIndexes(tbl, attrs, key.toString());
+            if (message.equals("Duplicate key!")) {
+                return "Duplicate unique key";
+            }
+        }
+//        String message = this.mongoDbConfig.insertIndex("UK_" + tableName, dtoUK);
+
         return this.insert(tableName, dto);
+    }
+
+    private String insertUniqueIndexes(ArrayList<Attribute> attrList, String[] attrs, String pk, String tableName) throws UnsupportedEncodingException {
+        int i = 0;
+        boolean ok = true;
+        Map<String, DTO> dtoMap = new HashMap<>();
+        while (i < attrList.size()) {
+            if (attrList.get(i).getUk() && !attrList.get(i).getPk()) {
+                String uk = attrs[i];
+                DTO dto = new DTO(uk, pk);
+                dtoMap.put("UK_"+tableName+"_"+attrList.get(i).getName(), dto);
+                if (this.mongoDbConfig.getValueByKey("UK_"+tableName+"_"+attrList.get(i).getName(), uk)!=null) {
+                    ok = false;
+                    return "Duplicate key!";
+                }
+            }
+            i+=1;
+        }
+        if (ok) {
+            for (String file : dtoMap.keySet()) {
+                this.mongoDbConfig.insertIndex(file, dtoMap.get(file));
+            }
+        }
+        return "Index files added!";
+    }
+
+    private String insertForeignKeyIndexes(ArrayList<Attribute> attrList, String[] attrs, String pk, String tableName) throws UnsupportedEncodingException {
+        int i = 0;
+        Map<String, DTO> dtoMap = new HashMap<>();
+        while (i < attrList.size()) {
+            if (attrList.get(i).getFk()) {
+                String fk = attrs[i];
+                String collectionName = "FK_" + tableName + "_" + attrList.get(i).getReference();
+                //check if the foreign key exists in the ref table
+                if (this.mongoDbConfig.getValueByKey(attrList.get(i).getReference(), fk)==null) {
+                    return "Fk ref not found!";
+                }
+                if (this.mongoDbConfig.getValueByKey(collectionName, fk)!=null) {
+                    Document doc = this.mongoDbConfig.getValueByKey(collectionName, fk);
+                    //updatam documentul
+                    String value = (String) doc.get("value");
+                    value += "#" + pk;
+                    DTO dto = new DTO(fk, value);
+                    this.mongoDbConfig.update(collectionName, dto);
+                } else {
+                    DTO dto = new DTO(fk, pk);
+                    dtoMap.put(collectionName, dto);
+                }
+            }
+            i+=1;
+        }
+        for (String file : dtoMap.keySet()) {
+            this.mongoDbConfig.insertIndex(file, dtoMap.get(file));
+        }
+        return "Index files added!";
+    }
+
+    private String insertUserIndexes(Table tbl, String[] attrs, String pk) throws UnsupportedEncodingException {
+        ArrayList<Attribute> attrList = (ArrayList<Attribute>) tbl.getAttributeList();
+        Map<String, DTO> dtoMap = new HashMap<>();
+        for (Index index : tbl.getIndexList()) {
+            //luam fiecare index in parte si verificam ce coloane contine
+            int i = 0;
+            String key = "";
+            String valueIndex = "";
+            while (i<attrList.size()) {
+                if (index.getColumns().contains(attrList.get(i).getName())) {
+                    if (key.equals("")) {
+                        key+=attrs[i];
+                    } else {
+                        key += "#" + attrs[i];
+                    }
+                }
+                i+=1;
+            }
+            if (index.getUnique() && this.mongoDbConfig.getValueByKey(index.getName(), key)!=null) {
+                return "Duplicate key!";
+            } else if (!index.getUnique() && this.mongoDbConfig.getValueByKey(index.getName(), key)!=null) {
+                Document doc = this.mongoDbConfig.getValueByKey(index.getName(), key);
+                //updatam documentul
+                String value = (String) doc.get("value");
+                value += "#" + pk;
+                DTO dto = new DTO(key, value);
+                this.mongoDbConfig.update(index.getName(), dto);
+            } else {
+                DTO dto = new DTO(key, pk);
+                dtoMap.put(index.getName(), dto);
+            }
+
+        }
+        for (String file : dtoMap.keySet()) {
+            this.mongoDbConfig.insertIndex(file, dtoMap.get(file));
+        }
+        return "Index files added!";
     }
 
     private String checkCreateIndexCommand(String cmd) throws Exception {
@@ -301,12 +417,13 @@ public class Service {
         table.setPks(pks);
         table.setUks(uks);
         table.setFks(fks);
-        Index idx = new Index(table.getTableName() + ".ind", tableName, pks.getPrimaryKeys(), databaseName, true);
+//        Index idx = new Index(table.getTableName() + ".ind", tableName, pks.getPrimaryKeys(), databaseName, true);
 
-        idxList.add(idx);
+//        idxList.add(idx);
         table.setIndexList(idxList);
         return this.repository.saveTable(table, databaseName);
     }
+
 
     public String dropTable(String tableName, String databaseName) throws Exception {
         return this.repository.deleteTable(databaseName, tableName);
@@ -329,12 +446,41 @@ public class Service {
 
     public String insert(String tbName,DTO dto) {
 
-        this.mongoDbConfig.insert(tbName, dto);
-        return "Value inserted";
+        return this.mongoDbConfig.insert(tbName, dto);
+//        return "Value inserted";
     }
 
-    public String delete(String tbName, DTO dto){
-        this.mongoDbConfig.delete(tbName,dto);
-        return "Value deleted";
+    public String delete(String tbName, DTO dto) throws Exception {
+        if (this.safeDelete(this.repository.findTable(this.currentDatabase.getDatabaseName(), tbName), dto)) {
+            this.mongoDbConfig.delete(tbName,dto);
+            return "Value deleted";
+        } else {
+            return "Attribute referenced in another table";
+        }
+
+    }
+
+    public boolean safeDelete(Table table, DTO dto) throws Exception {
+        //se verifica referintele
+        ArrayList<Table> tables = (ArrayList<Table>) this.repository.getTables(this.currentDatabase.getDatabaseName());
+        for (Table dbTable: tables) {
+            for (ForeignKey fk: dbTable.getFks().getForeignKeyList()) {
+                if (fk.getRefTable().equals(table.getTableName())) {
+                    if (this.mongoDbConfig.getValueByKey(fk.getFkfile(), dto.getKey())!= null) {
+                        //daca exista referinta la dto in alt tabel
+                        return false;
+                    }
+                }
+            }
+        }
+        //se sterg fisierele de uk
+        for (String uk: table.getUks().getUniqueKeys()) {
+            String tableName = "UK_" + table.getTableName() + "_" + uk;
+            Document document = this.mongoDbConfig.getDocumentByValue(tableName, dto.getKey());
+            if (document != null) {
+                this.mongoDbConfig.deleteByDocument(tableName, document);
+            }
+        }
+        return true;
     }
 }
