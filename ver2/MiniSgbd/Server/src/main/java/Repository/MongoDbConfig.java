@@ -90,8 +90,30 @@ public class MongoDbConfig {
         return myCollection.find(eq("value", value)).first();
     }
 
+//    public List<DTO> getDTOIndex(String collectionName, String index) {
+//        MongoCollection<Document> myCollection = db.getCollection(collectionName);
+//        FindIterable<Document> iterable = myCollection.find();
+//
+//    }
+
     public void deleteByDocument(String tableName, Document document){
         MongoCollection<Document> dbCollection = db.getCollection(tableName);
         dbCollection.deleteOne(document);
+    }
+
+    public void update(String collectioName, DTO dto)
+    {
+
+        MongoCollection<Document> collection = db.getCollection(collectioName);
+
+        BasicDBObject updateFields = new BasicDBObject();
+        updateFields.append("value", dto.getValue());
+
+        BasicDBObject setQuery = new BasicDBObject();
+        setQuery.append("$set", updateFields);
+
+        BasicDBObject searchQuery = new BasicDBObject("_id", dto.getKey());
+
+        collection.updateOne(searchQuery, setQuery);
     }
 }

@@ -144,6 +144,10 @@ public class Service {
             if (message.equals("Fk ref not found!")) {
                 return "Fk not found in reference table!";
             }
+            message = this.insertUserIndexes(tbl, attrs, key.toString());
+            if (message.equals("Duplicate key!")) {
+                return "Duplicate unique key";
+            }
         }
 //        String message = this.mongoDbConfig.insertIndex("UK_" + tableName, dtoUK);
 
@@ -176,7 +180,6 @@ public class Service {
 
     private String insertForeignKeyIndexes(ArrayList<Attribute> attrList, String[] attrs, String pk, String tableName) throws UnsupportedEncodingException {
         int i = 0;
-        boolean ok = true;
         Map<String, DTO> dtoMap = new HashMap<>();
         while (i < attrList.size()) {
             if (attrList.get(i).getFk()) {
@@ -189,12 +192,72 @@ public class Service {
                 if (this.mongoDbConfig.getValueByKey(collectionName, fk)!=null) {
                     Document doc = this.mongoDbConfig.getValueByKey(collectionName, fk);
                     //updatam documentul
+                    String value = (String) doc.get("value");
+                    value += "#" + pk;
+                    DTO dto = new DTO(fk, value);
+                    this.mongoDbConfig.update(collectionName, dto);
                 } else {
                     DTO dto = new DTO(fk, pk);
                     dtoMap.put(collectionName, dto);
                 }
             }
             i+=1;
+        }
+        for (String file : dtoMap.keySet()) {
+            this.mongoDbConfig.insertIndex(file, dtoMap.get(file));
+        }
+        return "Index files added!";
+    }
+
+    private String insertUserIndexes(Table tbl, String[] attrs, String pk) throws UnsupportedEncodingException {
+        ArrayList<Attribute> attrList = (ArrayList<Attribute>) tbl.getAttributeList();
+        Map<String, DTO> dtoMap = new HashMap<>();
+        for (Index index : tbl.getIndexList()) {
+            //luam fiecare index in parte si verificam ce coloane contine
+            int i = 0;
+            String key = "";
+            String valueIndex = "";
+            if (index.getUnique()) {
+                while (i<attrList.size()) {
+                    if (index.getColumns().contains(attrList.get(i).getName())) {
+                        if (key.equals("")) {
+                            key+=attrs[i];
+                        } else {
+                            key += "#" + attrs[i];
+                        }
+                    }
+                    i+=1;
+                }
+                DTO dto = new DTO(key, pk);
+                dtoMap.put(index.getName(), dto);
+                if (this.mongoDbConfig.getValueByKey(index.getName(), key)!=null) {
+                    return "Duplicate key!";
+                }
+            } else { //non-unique index
+                while (i<attrList.size()) {
+                    if (index.getColumns().contains(attrList.get(i).getName())) {
+                        //daca atributul se afla printre coloanele din index
+                        if (key.equals("")) {
+                            key+=attrs[i];
+                        } else {
+                            key += "#" + attrs[i];
+                        }
+                    }
+                    i+=1;
+                }
+                if (this.mongoDbConfig.getValueByKey(index.getName(), key)!=null) {
+                    Document doc = this.mongoDbConfig.getValueByKey(index.getName(), key);
+                    //updatam documentul
+                    String value = (String) doc.get("value");
+                    value += "#" + pk;
+                    DTO dto = new DTO(key, value);
+                    this.mongoDbConfig.update(index.getName(), dto);
+                } else {
+                    DTO dto = new DTO(key, pk);
+                    dtoMap.put(index.getName(), dto);
+                }
+            }
+
         }
         for (String file : dtoMap.keySet()) {
             this.mongoDbConfig.insertIndex(file, dtoMap.get(file));

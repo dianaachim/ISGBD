@@ -37,5 +37,23 @@
                 <UniqueAttribute>wname</UniqueAttribute>
             </UniqueKeys>
         </Table>
+        <Table TableName="Class">
+            <Attribute fk="false" length="0" name="cid" notNull="true" pk="true" ref="" type="int" uk="true"/>
+            <Attribute fk="false" length="225" name="cname" notNull="false" pk="false" ref="" type="varchar" uk="false"/>
+            <Attribute fk="false" length="0" name="room" notNull="false" pk="false" ref="" type="int" uk="false"/>
+            <ForeignKeys/>
+            <Index name="INDEX_Class_cname" isUnique="true">
+                <IndexAttribute>cname</IndexAttribute>
+            </Index>
+            <Index name="INDEX_Class_room" isUnique="false">
+                <IndexAttribute>room</IndexAttribute>
+            </Index>
+            <PrimaryKeys>
+                <PkAttribute>cid</PkAttribute>
+            </PrimaryKeys>
+            <UniqueKeys>
+                <UniqueAttribute>cid</UniqueAttribute>
+            </UniqueKeys>
+        </Table>
     </Database>
 </Databases>
