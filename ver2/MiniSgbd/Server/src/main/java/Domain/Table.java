@@ -16,6 +16,7 @@ public class Table implements Serializable {
     private List<Index> indexList;
     private PrimaryKeys pks;
     private UniqueKeys uks;
+    private ForeignKeys fks;
 
     public Table(String tableName, String databaseName) {
         this.tableName = tableName;
@@ -24,6 +25,7 @@ public class Table implements Serializable {
         this.indexList=new ArrayList<>();
         this.pks = new PrimaryKeys();
         this.uks = new UniqueKeys();
+        this.fks = new ForeignKeys();
     }
 
     public Table() {}
@@ -89,5 +91,14 @@ public class Table implements Serializable {
     @XmlElement(name="UniqueKeys")
     public void setUks(UniqueKeys uks) {
         this.uks = uks;
+    }
+
+    public ForeignKeys getFks() {
+        return fks;
+    }
+
+    @XmlElement(name="ForeignKeys")
+    public void setFks(ForeignKeys fks) {
+        this.fks = fks;
     }
 }

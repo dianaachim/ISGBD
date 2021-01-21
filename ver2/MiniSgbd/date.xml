@@ -1,30 +1,59 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <Databases>
     <Database databaseName="HP">
-        <Table TableName="hello">
-            <Attribute length="0" name="hid" notNull="true" PrimaryKey="true" reference="" type="int"/>
-            <Attribute length="0" name="hname" notNull="false" PrimaryKey="false" reference="" type="string"/>
-            <Index name="hello.ind" isUnique="true">
-                <IndexAttribute>hid</IndexAttribute>
+        <Table TableName="House">
+            <Attribute fk="false" length="0" name="houseId" notNull="true" pk="true" ref="" type="int" uk="true"/>
+            <Attribute fk="false" length="225" name="hname" notNull="true" pk="false" ref="" type="varchar" uk="true"/>
+            <Attribute fk="false" length="225" name="hcolor" notNull="false" pk="false" ref="" type="varchar" uk="false"/>
+            <ForeignKeys/>
+            <Index name="House.ind" isUnique="true">
+                <IndexAttribute>houseId</IndexAttribute>
             </Index>
             <PrimaryKeys>
-                <PkAttribute>hid</PkAttribute>
+                <PkAttribute>houseId</PkAttribute>
             </PrimaryKeys>
             <UniqueKeys>
-                <UniqueAttribute>hid</UniqueAttribute>
+                <UniqueAttribute>houseId</UniqueAttribute>
+                <UniqueAttribute>hname</UniqueAttribute>
             </UniqueKeys>
         </Table>
-        <Table TableName="test">
-            <Attribute length="0" name="tid" notNull="true" PrimaryKey="true" reference="" type="int"/>
-            <Attribute length="0" name="hid" notNull="false" PrimaryKey="false" reference="hello" type="int"/>
-            <Index name="test.ind" isUnique="true">
-                <IndexAttribute>tid</IndexAttribute>
+        <Table TableName="Wizard">
+            <Attribute fk="false" length="0" name="wid" notNull="true" pk="true" ref="" type="int" uk="true"/>
+            <Attribute fk="false" length="225" name="wname" notNull="true" pk="false" ref="" type="varchar" uk="true"/>
+            <Attribute fk="true" length="0" name="houseId" notNull="false" pk="false" ref="House" type="int" uk="false"/>
+            <Attribute fk="false" length="225" name="address" notNull="false" pk="false" ref="" type="varchar" uk="false"/>
+            <ForeignKeys>
+                <ForeignKey FkFile="FK_Wizard_House">
+                    <FkAttribute>houseId</FkAttribute>
+                    <RefAttribute>houseId</RefAttribute>
+                    <RefTable>House</RefTable>
+                </ForeignKey>
+            </ForeignKeys>
+            <PrimaryKeys>
+                <PkAttribute>wid</PkAttribute>
+            </PrimaryKeys>
+            <UniqueKeys>
+                <UniqueAttribute>wid</UniqueAttribute>
+                <UniqueAttribute>wname</UniqueAttribute>
+            </UniqueKeys>
+        </Table>
+        <Table TableName="Class">
+            <Attribute fk="false" length="0" name="cid" notNull="true" pk="true" ref="" type="int" uk="true"/>
+            <Attribute fk="false" length="225" name="cname" notNull="false" pk="false" ref="" type="varchar" uk="false"/>
+            <Attribute fk="false" length="0" name="room" notNull="false" pk="false" ref="" type="int" uk="false"/>
+            <ForeignKeys/>
+            <Index name="INDEX_Class_cname" isUnique="true">
+                <IndexAttribute>cname</IndexAttribute>
+            </Index>
+            <Index name="INDEX_Class_room" isUnique="false">
+                <IndexAttribute>room</IndexAttribute>
             </Index>
             <PrimaryKeys>
-                <PkAttribute>tid</PkAttribute>
+                <PkAttribute>cid</PkAttribute>
             </PrimaryKeys>
-            <UniqueKeys/>
+            <UniqueKeys>
+                <UniqueAttribute>cid</UniqueAttribute>
+            </UniqueKeys>
         </Table>
     </Database>
-    <Database databaseName="Naruto"/>
 </Databases>
