@@ -83,8 +83,40 @@ public class Service {
                     return this.checkDeleteCommand(cmd[2]);
                 }
                 break;
+            case "select":
+                return this.checkSelectCommand(cmd[1], cmd[2]);
         }
         return "Wrong command";
+    }
+
+    private String checkSelectCommand(String attributeDistinct, String selectBody) {
+        //for lab 4
+        String[] body = selectBody.split("\\.");
+        String tableName = "";
+        ArrayList<String> whereConditions = new ArrayList<>();
+        ArrayList<String> attributeList = new ArrayList<>();
+
+        for (String element: body)
+        {
+            if (element.split("\\(")[0].equals("from")) {
+                tableName = element.split("[()]")[1];
+            } else if (element.split("\\(")[0].equals("where")) {
+                String[] whereString  = element.split("[()]")[1].split("[AND]");
+                for (String whereCondition: whereString) {
+                    if (!whereCondition.equals("")) {
+                        whereConditions.add(whereCondition.split("\\[")[1].split("\\]")[0]);
+                    }
+                }
+            } else {
+                String[] valuesString  = element.split("[()]")[1].split("\\,");
+                for (String attr: valuesString) {
+                    if (!attr.equals("")) {
+                        attributeList.add(attr);
+                    }
+                }
+            }
+        }
+        return attributeList.toString();
     }
 
     private String checkDeleteCommand(String cmd) throws  Exception{
@@ -476,6 +508,14 @@ public class Service {
         //se sterg fisierele de uk
         for (String uk: table.getUks().getUniqueKeys()) {
             String tableName = "UK_" + table.getTableName() + "_" + uk;
+            Document document = this.mongoDbConfig.getDocumentByValue(tableName, dto.getKey());
+            if (document != null) {
+                this.mongoDbConfig.deleteByDocument(tableName, document);
+            }
+        }
+        //se sterge din fisierele de index
+        for (Index idx: table.getIndexList()) {
+            String tableName = idx.getName();
             Document document = this.mongoDbConfig.getDocumentByValue(tableName, dto.getKey());
             if (document != null) {
                 this.mongoDbConfig.deleteByDocument(tableName, document);

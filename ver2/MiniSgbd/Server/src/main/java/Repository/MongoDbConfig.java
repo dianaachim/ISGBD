@@ -3,20 +3,11 @@ package Repository;
 import Domain.DTO;
 import Domain.Database;
 import com.mongodb.*;
-import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
-import com.mongodb.client.result.DeleteResult;
-import jdk.nashorn.internal.runtime.doubleconv.DtoaBuffer;
 import org.bson.Document;
-import org.bson.conversions.Bson;
-import org.bson.types.ObjectId;
-
-import javax.xml.bind.DatatypeConverter;
 import java.io.UnsupportedEncodingException;
-import java.math.BigInteger;
-import java.util.ArrayList;
-import java.util.List;
+
 
 import static com.mongodb.client.model.Filters.eq;
 
