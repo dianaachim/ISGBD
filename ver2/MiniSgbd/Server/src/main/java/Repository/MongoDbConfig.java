@@ -3,10 +3,13 @@ package Repository;
 import Domain.DTO;
 import Domain.Database;
 import com.mongodb.*;
+import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import org.bson.Document;
 import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
+import java.util.List;
 
 
 import static com.mongodb.client.model.Filters.eq;
@@ -76,10 +79,41 @@ public class MongoDbConfig {
 
     }
 
+    public String getValueByKey2(String collectionName,String k) {
+        MongoCollection<Document> myCollection = db.getCollection(collectionName);
+        Document doc = myCollection.find(eq("_id", k)).first();
+        assert doc != null;
+        return doc.getString("value");
+    }
+
     public Document getDocumentByValue(String collectionName, String value) {
         MongoCollection<Document> myCollection = db.getCollection(collectionName);
         return myCollection.find(eq("value", value)).first();
     }
+
+    public List<DTO> getDto(String tbName)
+    {
+        List<DTO> list=new ArrayList<>();
+        MongoCollection<Document> collection = db.getCollection(tbName);
+        FindIterable<Document> dbCursor = collection.find();
+        for (Document doc: dbCursor) {
+            String key = (String) doc.get("_id");
+            String value= (String) doc.get("value");
+            DTO dto=new DTO(key,value);
+            list.add(dto);
+        }
+        return list;
+
+    }
+
+//    public List<Document> getDocs(String collectionName) {
+//        List<DTO> dtoList = new ArrayList<>();
+//        MongoCollection<Document> dbCollection = db.getCollection(collectionName);
+//        FindIterable<Document> listDocument = dbCollection.find();
+//        for (Document doc: listDocument) {
+//
+//        }
+//    }
 
 //    public List<DTO> getDTOIndex(String collectionName, String index) {
 //        MongoCollection<Document> myCollection = db.getCollection(collectionName);
