@@ -123,9 +123,7 @@ public class Service {
         List<DTO> dtoList = this.mongoDbConfig.getDto(tableName); //lista cu toate dto-urile din tabela
         List<DTO> dtoListIndex; //lista cu dto-urile din index
         List<String> keys = new ArrayList<>(); //lista cu keys care respecta conditiile din where
-//        List<Pair<String, String>> conditionsList = new ArrayList<>();
         List<String> keyAttributesList = new ArrayList<>(conditions.keySet());
-//        List<String> finalAttributesStrings = new ArrayList<>();
         String finalTable;
 
         if (this.repository.findTable(this.currentDatabase.toString(), tableName)==null) {
@@ -149,42 +147,7 @@ public class Service {
                     i+=1;
                 }
             }
-//            for (String key: keys) {
-//                //luam toate key-urile care respecta conditia si afisam atributele din select
-//                String tableField = "|";
-//                String value = this.mongoDbConfig.getValueByKey2(tableName, key);
-//                String[] columns = value.split("#");
-//
-//                if (attributeList.size()==1 && attributeList.get(0).equals("*")) {
-//                    //atunci ne traba toate atributele
-//
-//                    for (String col: columns) {
-//                        tableField = tableField + col + "|";
-//                    }
-//
-//                } else {
-//                    //atunci cand traba numa o parte din atribute
-//                    int i=0;
-//                    List<Attribute> tableAttributes = this.repository.findTable(this.currentDatabase.getDatabaseName(), tableName).getAttributeList();
-//                    for (Attribute attribute: tableAttributes) {
-//                        if (attributeList.contains(attribute.getName())) {
-//                            tableField = tableField + columns[i] + "|";
-//                            i+=1;
-//                        }
-//                    }
-//
-//                }
-//                if (attributeDistinct.equals("all")) {
-//                    finalAttributesStrings.add(tableField);
-//                } else if (attributeDistinct.equals("distinct")) {
-//                    if (!finalAttributesStrings.contains(tableField)) {
-//                        finalAttributesStrings.add(tableField);
-//                    }
-//                } else {
-//                    return "Wrong command!";
-//                }
-//
-//            }
+            //finalTable = this.keysToPrettyTable(keys, tableName, attributeDistinct, attributeList);
         } else {
             //daca nu avem index pe atributele din where
             //TODO: IMPLEMENTARE PENTRU CAND NU ESTE INDEX
