@@ -123,8 +123,10 @@ public class Service {
         List<DTO> dtoList = this.mongoDbConfig.getDto(tableName); //lista cu toate dto-urile din tabela
         List<DTO> dtoListIndex; //lista cu dto-urile din index
         List<String> keys = new ArrayList<>(); //lista cu keys care respecta conditiile din where
-        List<String> keyAttributesList = new ArrayList<>(conditions.keySet());
+        List<String> keyAttributesList = new ArrayList<>(conditions.keySet()); //lista cu atribute din where
         String finalTable;
+        String item = "Id";
+        String item2= "id";
 
         if (this.repository.findTable(this.currentDatabase.toString(), tableName)==null) {
             return "Table not found";
@@ -151,6 +153,43 @@ public class Service {
         } else {
             //daca nu avem index pe atributele din where
             //TODO: IMPLEMENTARE PENTRU CAND NU ESTE INDEX
+            //verificam daca conditia e pe id
+            if (keyAttributesList.size() == 1 && conditions.get(keyAttributesList.get(0)).size()== 1 && conditions.get(keyAttributesList.get(0)).get(0).fst.equals("=") && keyAttributesList.get(0).contains(item) || keyAttributesList.get(0).contains(item2)){
+                String value = this.mongoDbConfig.getValueByKey2(tableName,conditions.get(keyAttributesList.get(0)).get(0).snd);
+                if (value.equals("No find")) {
+                    return "No element found";
+                }
+                keys.add(conditions.get(keyAttributesList.get(0)).get(0).snd);
+            }
+            else {
+                //daca nu este nici un index, mergem pe toate elementele din tabelul principal si verificam conditia
+                for (DTO dto: dtoList) {
+                    //luam fiecare element si facem split pe valoare
+                    String[] value = dto.getValue().split("#");
+                    String[] allValues = new String[value.length+1];
+                    allValues[0] = dto.getKey();
+                    System.arraycopy(value, 0, allValues, 1, value.length);
+                    //mergem simultan pe lista de valori si pe lista de atribute din tabel
+                    boolean checks = true; // presupunem ca toate conditiile sunt indeplinite
+                    List<Attribute> tableAttributes = this.repository.findTable(this.currentDatabase.getDatabaseName(), tableName).getAttributeList();
+                    for (int i = 0; i < allValues.length; i++) {
+                        //verificam daca valoarea de pe pozitia i indeplineste conditiile din conditions pentru elementul cu valoara i+1 din tableAttributes
+                        List<Pair<String, String>> elementConditions = conditions.get(tableAttributes.get(i).getName());
+                        if (elementConditions != null) {
+                            for (Pair<String, String> pair : elementConditions) {
+                                if (!this.checkCondition(allValues[i], pair)) {
+                                    checks = false;
+                                }
+                            }
+                        }
+                    }
+                    if (checks) {
+                        //inseamna ca toate conditiile au fost indeplinite
+                        keys.add(dto.getKey());
+                    }
+                }
+
+            }
         }
 
         finalTable = this.keysToPrettyTable(keys, tableName, attributeDistinct, attributeList);
@@ -160,7 +199,7 @@ public class Service {
 
     private String keysToPrettyTable(List<String> keys, String tableName, String attributeDistinct, ArrayList<String> attributeList) throws Exception {
         List<String> finalAttributesStrings = new ArrayList<>();
-        String finalTable = "";
+        StringBuilder finalTable = new StringBuilder();
         String tableHead = "|";
 
         for (String key: keys) {
@@ -171,6 +210,7 @@ public class Service {
 
             if (attributeList.size()==1 && attributeList.get(0).equals("*")) {
                 //atunci ne traba toate atributele
+                tableField = tableField + key + "|";
                 List<Attribute> tableAttributes = this.repository.findTable(this.currentDatabase.getDatabaseName(), tableName).getAttributeList();
                 for (Attribute attribute: tableAttributes) {
                     tableHead = tableHead + attribute.getName() + "|";
@@ -185,7 +225,11 @@ public class Service {
                 List<Attribute> tableAttributes = this.repository.findTable(this.currentDatabase.getDatabaseName(), tableName).getAttributeList();
                 for (Attribute attribute: tableAttributes) {
                     if (attributeList.contains(attribute.getName())) {
-                        tableField = tableField + columns[i] + "|";
+                        if (attribute.getName().matches("(.*)id") || attribute.getName().matches("(.*)Id")) {
+                            tableField = tableField + key + "|";
+                        } else {
+                            tableField = tableField + columns[i] + "|";
+                        }
                         tableHead = tableHead + attribute.getName() + "|";
                         i+=1;
                     }
@@ -203,13 +247,13 @@ public class Service {
             }
 
         }
-        finalTable = tableHead;
+        finalTable = new StringBuilder(tableHead);
 
         for (String row: finalAttributesStrings) {
-            finalTable = finalTable + "\n" + row;
+            finalTable.append("\n").append(row);
         }
 
-        return finalTable;
+        return finalTable.toString();
     }
 
     private List<Pair<String, String>> keyAttributesToList(List<String> keyAttributes) {
@@ -275,7 +319,7 @@ public class Service {
         StringBuilder indexNameCond = new StringBuilder("INDEX_" + tableName);
 
         for (String col: conditions.keySet()) {
-            if (this.repository.findAttribute(this.currentDatabase.getDatabaseName(), tableName, col).getUk()) {
+            if (this.repository.findAttribute(this.currentDatabase.getDatabaseName(), tableName, col).getUk() && !col.matches("(.*)"+"Id") && !col.matches("(.*)"+"id")) {
                 uniqueIndex = "UK_" + tableName + "_" + col;
             }
             indexName.append("_").append(col);

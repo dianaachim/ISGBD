@@ -82,7 +82,9 @@ public class MongoDbConfig {
     public String getValueByKey2(String collectionName,String k) {
         MongoCollection<Document> myCollection = db.getCollection(collectionName);
         Document doc = myCollection.find(eq("_id", k)).first();
-        assert doc != null;
+        if (doc == null) {
+            return "No find";
+        }
         return doc.getString("value");
     }
 
