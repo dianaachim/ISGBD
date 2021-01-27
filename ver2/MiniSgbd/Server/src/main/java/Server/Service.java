@@ -88,9 +88,11 @@ public class Service {
     }
 
     private String checkSelectCommand(String attributeDistinct, String selectBody) throws Exception {
-        //for lab 4
+        //for lab 4 & 5
         String[] body = selectBody.split("\\.");
         String tableName = "";
+        String joinTable = "";
+        String joinCondition = "";
         ArrayList<String> whereConditions = new ArrayList<>();
         ArrayList<String> attributeList = new ArrayList<>();
 
@@ -105,6 +107,10 @@ public class Service {
                         whereConditions.add(whereCondition.split("\\[")[1].split("\\]")[0]);
                     }
                 }
+            } else  if (element.split("\\(")[0].equals("join")) {
+                joinTable = element.split("[()]")[1];
+            } else  if (element.split("\\(")[0].equals("on")) {
+                joinCondition = element.split("[()]")[1];
             } else {
                 String[] valuesString  = element.split("[()]")[1].split(",");
                 for (String attr: valuesString) {
@@ -114,23 +120,75 @@ public class Service {
                 }
             }
         }
-        return this.executeSelect(attributeDistinct, tableName, attributeList, whereConditions);
+        if (joinTable.equals("")) {
+            return this.executeSelect(attributeDistinct, tableName, attributeList, whereConditions);
+        }
+        return this.executeSelectWithJoin(attributeDistinct, tableName, attributeList, whereConditions, joinTable, joinCondition);
+    }
+    
+    private String executeSelectWithJoin(String attributeDistinct, String tableName, ArrayList<String> attributeList, ArrayList<String> whereConditions, String joinTableName, String joinCondition) throws Exception {
+        HashMap<Pair<String, String>, List<Pair<String, String>>> conditions = this.whereConditionsToHashMap(whereConditions); //key=pereche tabel-coloana, value=lista de pair(operator,valoare)
+        String fkIndex = this.findFkIndexName(tableName, joinTableName); //numele indexului de fk pt join
+        String interTable = "";
+        String finalTable = "";
+
+        if (this.repository.findTable(this.currentDatabase.toString(), tableName)==null) {
+            return "Table not found";
+        }
+        
+        if (this.repository.findTable(this.currentDatabase.toString(), joinTableName)==null) {
+            return "Table not found";
+        }
+
+        if (!fkIndex.equals("")) {
+            //index nested loop join
+        }
+        
+        return fkIndex;
+    }
+
+    private String findFkIndexName(String tableName, String joinTableName) throws Exception {
+        String index = "";
+        String indexName = "FK_" + tableName + "_" + joinTableName;
+        for (ForeignKey fk: this.repository.findTable(this.currentDatabase.getDatabaseName(), tableName).getFks().getForeignKeyList()) {
+            if (fk.getFkfile().equals(indexName)) {
+                index = indexName;
+                break;
+            }
+        }
+        if (!index.equals("")) {
+            return index;
+        }
+
+        return "";
     }
 
     private String executeSelect(String attributeDistinct, String tableName, ArrayList<String> attributeList, ArrayList<String> whereConditions) throws Exception {
-        HashMap<String, List<Pair<String, String>>> conditions = this.whereConditionsToHashMap(whereConditions); //key=coloana, value=lista de pair(operator,valoare)
+        List<String> keys = this.getFinalKeysList(attributeDistinct, tableName, attributeList, whereConditions);
+        if (keys== null) {
+            return "No table found or not attribute found";
+        }
+
+        return this.keysToPrettyTable(keys, tableName, attributeDistinct, attributeList);
+    }
+
+    private List<String> getFinalKeysList(String attributeDistinct, String tableName, ArrayList<String> attributeList, ArrayList<String> whereConditions) throws Exception {
+        HashMap<Pair<String, String>, List<Pair<String, String>>> conditions = this.whereConditionsToHashMap(whereConditions); //key=pereche tabel-coloana, value=lista de pair(operator,valoare)
         String index = this.findIndexName(conditions, tableName);
         List<DTO> dtoList = this.mongoDbConfig.getDto(tableName); //lista cu toate dto-urile din tabela
         List<DTO> dtoListIndex; //lista cu dto-urile din index
         List<String> keys = new ArrayList<>(); //lista cu keys care respecta conditiile din where
-        List<String> keyAttributesList = new ArrayList<>(conditions.keySet()); //lista cu atribute din where
+        List<Pair<String, String>> keyAttributesList = new ArrayList<>(conditions.keySet()); //lista cu atribute din where
         String finalTable;
         String item = "Id";
         String item2= "id";
 
         if (this.repository.findTable(this.currentDatabase.toString(), tableName)==null) {
-            return "Table not found";
+            return null;
         }
+
+
+        //prima data verificam conditia de join si dupa cea de where
 
         if (!index.equals("")) {
             dtoListIndex = this.mongoDbConfig.getDto(index);
@@ -154,10 +212,10 @@ public class Service {
             //daca nu avem index pe atributele din where
             //TODO: IMPLEMENTARE PENTRU CAND NU ESTE INDEX
             //verificam daca conditia e pe id
-            if (keyAttributesList.size() == 1 && conditions.get(keyAttributesList.get(0)).size()== 1 && conditions.get(keyAttributesList.get(0)).get(0).fst.equals("=") && keyAttributesList.get(0).contains(item) || keyAttributesList.get(0).contains(item2)){
+            if (keyAttributesList.size() == 1 && conditions.get(keyAttributesList.get(0)).size()== 1 && conditions.get(keyAttributesList.get(0)).get(0).fst.equals("=") && keyAttributesList.get(0).snd.contains(item) || keyAttributesList.get(0).snd.contains(item2)){
                 String value = this.mongoDbConfig.getValueByKey2(tableName,conditions.get(keyAttributesList.get(0)).get(0).snd);
                 if (value.equals("No find")) {
-                    return "No element found";
+                    return null;
                 }
                 keys.add(conditions.get(keyAttributesList.get(0)).get(0).snd);
             }
@@ -174,7 +232,7 @@ public class Service {
                     List<Attribute> tableAttributes = this.repository.findTable(this.currentDatabase.getDatabaseName(), tableName).getAttributeList();
                     for (int i = 0; i < allValues.length; i++) {
                         //verificam daca valoarea de pe pozitia i indeplineste conditiile din conditions pentru elementul cu valoara i+1 din tableAttributes
-                        List<Pair<String, String>> elementConditions = conditions.get(tableAttributes.get(i).getName());
+                        List<Pair<String, String>> elementConditions = conditions.get(Pair.of(tableName, tableAttributes.get(i).getName()));
                         if (elementConditions != null) {
                             for (Pair<String, String> pair : elementConditions) {
                                 if (!this.checkCondition(allValues[i], pair)) {
@@ -191,13 +249,11 @@ public class Service {
 
             }
         }
-
-        finalTable = this.keysToPrettyTable(keys, tableName, attributeDistinct, attributeList);
-
-        return finalTable;
+        return keys;
     }
 
     private String keysToPrettyTable(List<String> keys, String tableName, String attributeDistinct, ArrayList<String> attributeList) throws Exception {
+        //elementele din attributeList sunt sub forma tabel_attribut
         List<String> finalAttributesStrings = new ArrayList<>();
         StringBuilder finalTable = new StringBuilder();
         String tableHead = "|";
@@ -312,17 +368,21 @@ public class Service {
         return false;
     }
 
-    private String findIndexName(HashMap<String, List<Pair<String, String>>> conditions, String tableName) throws Exception {
+    private String findIndexName(HashMap<Pair<String, String>, List<Pair<String, String>>> conditions, String tableName) throws Exception {
+        //finds if there is an index on the attributes from one table of the select statement
         String index = "";
         String uniqueIndex = "";
         StringBuilder indexName = new StringBuilder("INDEX_" + tableName);
         StringBuilder indexNameCond = new StringBuilder("INDEX_" + tableName);
 
-        for (String col: conditions.keySet()) {
-            if (this.repository.findAttribute(this.currentDatabase.getDatabaseName(), tableName, col).getUk() && !col.matches("(.*)"+"Id") && !col.matches("(.*)"+"id")) {
-                uniqueIndex = "UK_" + tableName + "_" + col;
+        for (Pair<String, String> col: conditions.keySet()) {
+            if (col.fst.equals(tableName)) {
+                if (this.repository.findAttribute(this.currentDatabase.getDatabaseName(), tableName, col.snd).getUk() && !col.snd.matches("(.*)"+"Id") && !col.snd.matches("(.*)"+"id")) {
+                    uniqueIndex = "UK_" + tableName + "_" + col.snd;
+                }
+                indexName.append("_").append(col.snd);
             }
-            indexName.append("_").append(col);
+
         }
 
         if (!indexName.equals(indexNameCond)) {
@@ -342,16 +402,18 @@ public class Service {
         }
     }
 
-    private HashMap<String, List<Pair<String, String>>> whereConditionsToHashMap (ArrayList<String> whereConditions) {
-        HashMap<String, List<Pair<String, String>>> conditions = new HashMap<>();
+    private HashMap<Pair<String, String>, List<Pair<String, String>>> whereConditionsToHashMap (ArrayList<String> whereConditions) {
+        HashMap<Pair<String, String>, List<Pair<String, String>>> conditions = new HashMap<>();
         for (String cond: whereConditions) {
             ArrayList<String> conditionArray = this.splitCondition(cond);
-            if (conditions.containsKey(conditionArray.get(0))) {
-                conditions.get(conditionArray.get(0)).add(Pair.of(conditionArray.get(1), conditionArray.get(2)));
+            String[] keyAttr= conditionArray.get(0).split("_");
+            Pair<String, String> key = Pair.of(keyAttr[0], keyAttr[1]);
+            if (conditions.containsKey(key)) {
+                conditions.get(key).add(Pair.of(conditionArray.get(1), conditionArray.get(2)));
             } else {
                 List<Pair<String, String>> c = new ArrayList<>();
                 c.add(Pair.of(conditionArray.get(1), conditionArray.get(2)));
-                conditions.put(conditionArray.get(0), c);
+                conditions.put(key, c);
             }
         }
         return conditions;
@@ -632,7 +694,7 @@ public class Service {
                         } else {
                             a.setName(att[0]);
                             String[] type = att[1].split("\\[");
-                            if (this.validateAttributeType(type[0].split("\\]")[0])) {
+                            if (this.validateAttributeType(type[0].split("]")[0])) {
                                 a.setType(type[0]);
                                 if (type.length > 1) {
                                     a.setLength(Integer.parseInt(type[1]));
