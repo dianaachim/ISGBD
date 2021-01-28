@@ -39,7 +39,7 @@ public class Server {
 
             while(!done && scanner.hasNextLine()) {
                 String line = scanner.nextLine();
-                serverPrintOut.println("Echo from Diana's Server: " + line);
+//                serverPrintOut.println("Echo from Diana's Server: " + line);
 
                 if(line.toLowerCase().trim().equals("exit")) {
                     done = true;
