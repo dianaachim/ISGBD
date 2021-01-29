@@ -4,6 +4,7 @@ import Domain.*;
 import Repository.*;
 import com.sun.tools.javac.util.Pair;
 import org.bson.Document;
+import org.w3c.dom.Attr;
 
 import java.io.UnsupportedEncodingException;
 import java.util.*;
@@ -126,15 +127,13 @@ public class Service {
     }
     
     private String executeSelectWithJoin(String attributeDistinct, String tableName, ArrayList<String> attributeList, ArrayList<String> whereConditions, String joinTableName, String joinCondition) throws Exception {
-//        HashMap<Pair<String, String>, List<Pair<String, String>>> conditions = this.whereConditionsToHashMap(whereConditions); //key=pereche tabel-coloana, value=lista de pair(operator,valoare)
         String fkIndex = this.findFkIndexName(tableName, joinTableName); //numele indexului de fk pt join
         List<String> interTable = new ArrayList<>(); //lista cu stringuri care resprezinta tabelul interimar
-        List<DTO> dtosJoinTable = new ArrayList<>(); //toate dto-urile din tabelul de join
+        List<DTO> dtosJoinTable = this.mongoDbConfig.getDto(joinTableName); //toate dto-urile din tabelul de join
         List<Attribute> attributes = new ArrayList<>(); //lista cu atributele tabelului final
         List<String> concatTable = new ArrayList<>(); //tabel final
         List<String> whereConditionKeysTable1 = this.getFinalKeysList(attributeDistinct, tableName, attributeList, whereConditions); // cheile care indeplinesc conditiile pt tabel 1
-        List<String> whereConditionKeysJoinTable = this.getFinalKeysList(attributeDistinct, joinTableName, attributeList, whereConditions);
-        String finalTable = "";
+        List<String> whereConditionKeysJoinTable = this.getFinalKeysList(attributeDistinct, joinTableName, attributeList, whereConditions); //cheile care indeplinesc conditiile pt tabelul de join
 
         if (this.repository.findTable(this.currentDatabase.toString(), tableName)==null) {
             return "Table not found";
@@ -149,7 +148,7 @@ public class Service {
 
         if (!fkIndex.equals("")) {
             //index nested loop join
-            dtosJoinTable = this.mongoDbConfig.getDto(joinTableName);
+//            dtosJoinTable = this.mongoDbConfig.getDto(joinTableName);
 
             //join joinTable x fkIndex
             for (DTO dto: dtosJoinTable) {
@@ -199,6 +198,96 @@ public class Service {
         } else {
             //hash join
             //TODO: hash join
+            Hashtable<String, List<String>> hashtable = new Hashtable<>(); //hashtable-ul de join
+            List<DTO> dtosTable1 = this.mongoDbConfig.getDto(tableName); //toate dto-urile din primul tabel
+            String[] onCondition = joinCondition.split("=");
+            Pair<String, String> joinAttributeTable1 = null;
+            Pair<String, String> joinAttributeJoinTable = null;
+            List<Attribute> table1Attributes = this.repository.findTable(this.currentDatabase.getDatabaseName(), tableName).getAttributeList();
+            List<Attribute> joinTableAttributes = this.repository.findTable(this.currentDatabase.getDatabaseName(), joinTableName).getAttributeList();
+
+            attributes = null;
+            attributes = table1Attributes;
+            attributes.addAll(joinTableAttributes);
+
+            for (String onCond: onCondition) {
+                String[] tv = onCond.split("_");
+                if (tv[0].equals(tableName)) {
+                    joinAttributeTable1 = Pair.of(tv[0], tv[1]);
+                } else if (tv[0].equals(joinTableName)){
+                    joinAttributeJoinTable = Pair.of(tv[0], tv[1]);
+                } else {
+                    return "Wrong table name in join condition";
+                }
+            }
+            if (joinAttributeJoinTable == null || joinAttributeTable1 == null) {
+                return "No join condition?";
+            }
+            //cream hash table-ul
+            for (DTO dto: dtosTable1) {
+                String[] values = dto.getValue().split("#");
+                int i = 0;
+                for (Attribute attr: table1Attributes) {
+                    if (attr.getName().equals(joinAttributeTable1.snd)) {
+                        //daca suntem la atributul din conditia de join
+                        if (hashtable.containsKey(values[i-1])) {
+                            if (whereConditionKeysTable1 != null && whereConditionKeysTable1.contains(dto.getKey())) {
+                                hashtable.get(values[i - 1]).add(dto.getKey());
+                            }
+                        } else {
+                            if (whereConditionKeysTable1 != null && whereConditionKeysTable1.contains(dto.getKey())) {
+                                List<String> hashValue = new ArrayList<>();
+                                hashValue.add(dto.getKey());
+                                hashtable.put(values[i-1], hashValue);
+                            }
+                        }
+                        break;
+                    }
+                    i++;
+                }
+            }
+            for (DTO dto: dtosJoinTable) {
+                //acum luam datele din tabelul de join care se potrivesc cu cheile din hash table
+                if (whereConditionKeysJoinTable != null && whereConditionKeysJoinTable.contains(dto.getKey())) {
+                    String[] values = dto.getValue().split("#");
+                    int i = 0;
+                    for (Attribute attr : joinTableAttributes) {
+                        if (attr.getName().equals(joinAttributeJoinTable.snd)) {
+                            //atributul din conditia de join
+                            if (hashtable.containsKey(values[i - 1])) {
+                                List<String> table1Keys = hashtable.get(values[i - 1]);
+                                for (String key : table1Keys) {
+                                    //pun valoarea pt key intr-un string
+                                    String row = "|" + key + "|" + this.mongoDbConfig.getValueByKey2(tableName, key).replace("#", "|") + "|" + dto.getKey() + "|" + dto.getValue().replace("#", "|") + "|";
+                                    concatTable.add(row);
+                                }
+                            }
+                            break;
+                        }
+                        i++;
+                    }
+                }
+                else {
+                    String[] values = dto.getValue().split("#");
+                    int i = 0;
+                    for (Attribute attr : joinTableAttributes) {
+                        if (attr.getName().equals(joinAttributeJoinTable.snd)) {
+                            //atributul din conditia de join
+                            if (hashtable.containsKey(values[i - 1])) {
+                                List<String> table1Keys = hashtable.get(values[i - 1]);
+                                for (String key : table1Keys) {
+                                    //pun valoarea pt key intr-un string
+                                    String row = "|" + key + "|" + this.mongoDbConfig.getValueByKey2(tableName, key).replace("#", "|") + "|" + dto.getKey() + "|" + dto.getValue().replace("#", "|") + "|";
+                                    concatTable.add(row);
+                                }
+                            }
+                            break;
+                        }
+                        i++;
+                    }
+                }
+
+            }
         }
         
         return this.joinSelectToPrettyTable(attributeDistinct, attributeList, concatTable, attributes);
@@ -386,8 +475,21 @@ public class Service {
     private String keysToPrettyTable(List<String> keys, String tableName, String attributeDistinct, ArrayList<String> attributeList) throws Exception {
         //elementele din attributeList sunt sub forma tabel_attribut
         List<String> finalAttributesStrings = new ArrayList<>();
+        List<Attribute> tableAttributes = this.repository.findTable(this.currentDatabase.getDatabaseName(), tableName).getAttributeList();
         StringBuilder finalTable = new StringBuilder();
         String tableHead = "|";
+
+        if (attributeList.size()==1 && attributeList.get(0).equals("*")) {
+            for (Attribute attribute: tableAttributes) {
+                tableHead = tableHead + attribute.getName() + "|";
+            }
+        } else {
+            for (Attribute attribute : tableAttributes) {
+                if (attributeList.contains(attribute.getName())) {
+                    tableHead = tableHead + attribute.getName() + "|";
+                }
+            }
+        }
 
         for (String key: keys) {
             //luam toate key-urile care respecta conditia si afisam atributele din select
@@ -398,10 +500,7 @@ public class Service {
             if (attributeList.size()==1 && attributeList.get(0).equals("*")) {
                 //atunci ne traba toate atributele
                 tableField = tableField + key + "|";
-                List<Attribute> tableAttributes = this.repository.findTable(this.currentDatabase.getDatabaseName(), tableName).getAttributeList();
-                for (Attribute attribute: tableAttributes) {
-                    tableHead = tableHead + attribute.getName() + "|";
-                }
+
                 for (String col: columns) {
                     tableField = tableField + col + "|";
                 }
@@ -409,7 +508,7 @@ public class Service {
             } else {
                 //atunci cand traba numa o parte din atribute
                 int i=0;
-                List<Attribute> tableAttributes = this.repository.findTable(this.currentDatabase.getDatabaseName(), tableName).getAttributeList();
+//                List<Attribute> tableAttributes = this.repository.findTable(this.currentDatabase.getDatabaseName(), tableName).getAttributeList();
                 for (Attribute attribute: tableAttributes) {
                     if (attributeList.contains(attribute.getName())) {
                         if (attribute.getName().matches("(.*)id") || attribute.getName().matches("(.*)Id")) {
@@ -417,7 +516,7 @@ public class Service {
                         } else {
                             tableField = tableField + columns[i] + "|";
                         }
-                        tableHead = tableHead + attribute.getName() + "|";
+//                        tableHead = tableHead + attribute.getName() + "|";
                         i+=1;
                     }
                 }

@@ -55,5 +55,29 @@
                 <UniqueAttribute>cid</UniqueAttribute>
             </UniqueKeys>
         </Table>
+        <Table TableName="Creature">
+            <Attribute fk="false" length="0" name="cid" notNull="true" pk="true" ref="" type="int" uk="false"/>
+            <Attribute fk="false" length="0" name="cspecies" notNull="false" pk="false" ref="" type="varchar" uk="false"/>
+            <Attribute fk="false" length="0" name="cname" notNull="false" pk="false" ref="" type="varchar" uk="false"/>
+            <Attribute fk="false" length="0" name="ccolor" notNull="false" pk="false" ref="" type="varchar" uk="false"/>
+            <Attribute fk="false" length="0" name="cplace" notNull="false" pk="false" ref="" type="varchar" uk="false"/>
+            <Attribute fk="false" length="0" name="cage" notNull="false" pk="false" ref="" type="int" uk="false"/>
+            <ForeignKeys/>
+            <PrimaryKeys>
+                <PkAttribute>cid</PkAttribute>
+            </PrimaryKeys>
+            <UniqueKeys/>
+        </Table>
+        <Table TableName="Specie">
+            <Attribute fk="false" length="0" name="sid" notNull="true" pk="true" ref="" type="int" uk="false"/>
+            <Attribute fk="false" length="0" name="sname" notNull="false" pk="false" ref="" type="varchar" uk="false"/>
+            <Attribute fk="false" length="0" name="smortality" notNull="false" pk="false" ref="" type="varchar" uk="false"/>
+            <Attribute fk="false" length="0" name="sdescription" notNull="false" pk="false" ref="" type="varchar" uk="false"/>
+            <ForeignKeys/>
+            <PrimaryKeys>
+                <PkAttribute>sid</PkAttribute>
+            </PrimaryKeys>
+            <UniqueKeys/>
+        </Table>
     </Database>
 </Databases>
