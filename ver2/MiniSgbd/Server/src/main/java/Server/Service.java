@@ -4,6 +4,7 @@ import Domain.*;
 import Repository.*;
 import com.sun.tools.javac.util.Pair;
 import org.bson.Document;
+import org.springframework.aop.aspectj.annotation.PrototypeAspectInstanceFactory;
 import org.w3c.dom.Attr;
 
 import java.io.UnsupportedEncodingException;
@@ -95,6 +96,9 @@ public class Service {
         String joinCondition = "";
         ArrayList<String> whereConditions = new ArrayList<>();
         ArrayList<String> attributeList = new ArrayList<>();
+        ArrayList<String> groupbyAttributes = new ArrayList<>();
+        String aggregateFunction = "";
+        String aggregateAttribute = "";
 
         for (String element: body)
         {
@@ -111,7 +115,30 @@ public class Service {
                 joinTable = element.split("[()]")[1];
             } else  if (element.split("\\(")[0].equals("on")) {
                 joinCondition = element.split("[()]")[1];
-            } else {
+            } else  if (element.split("\\(")[0].equals("groupby")) {
+                String[] valuesString  = element.split("[()]")[1].split(",");
+                for (String attr: valuesString) {
+                    if (!attr.equals("")) {
+                        groupbyAttributes.add(attr);
+                    }
+                }
+            } else  if (element.split("\\(")[0].equals("count")) {
+                aggregateAttribute = element.split("[()]")[1];
+                aggregateFunction = "count";
+            } else  if (element.split("\\(")[0].equals("sum")) {
+                aggregateAttribute = element.split("[()]")[1];
+                aggregateFunction = "sum";
+            } else  if (element.split("\\(")[0].equals("avg")) {
+                aggregateAttribute = element.split("[()]")[1];
+                aggregateFunction = "avg";
+            } else  if (element.split("\\(")[0].equals("min")) {
+                aggregateAttribute = element.split("[()]")[1];
+                aggregateFunction = "min";
+            } else  if (element.split("\\(")[0].equals("max")) {
+                aggregateAttribute = element.split("[()]")[1];
+                aggregateFunction = "max";
+            }
+            else {
                 String[] valuesString  = element.split("[()]")[1].split(",");
                 for (String attr: valuesString) {
                     if (!attr.equals("")) {
@@ -121,7 +148,7 @@ public class Service {
             }
         }
         if (joinTable.equals("")) {
-            return this.executeSelect(attributeDistinct, tableName, attributeList, whereConditions);
+            return this.executeSelect(attributeDistinct, tableName, attributeList, whereConditions, groupbyAttributes, aggregateAttribute, aggregateFunction);
         }
         return this.executeSelectWithJoin(attributeDistinct, tableName, attributeList, whereConditions, joinTable, joinCondition);
     }
@@ -197,7 +224,6 @@ public class Service {
             }
         } else {
             //hash join
-            //TODO: hash join
             Hashtable<String, List<String>> hashtable = new Hashtable<>(); //hashtable-ul de join
             List<DTO> dtosTable1 = this.mongoDbConfig.getDto(tableName); //toate dto-urile din primul tabel
             String[] onCondition = joinCondition.split("=");
@@ -380,13 +406,214 @@ public class Service {
         return "";
     }
 
-    private String executeSelect(String attributeDistinct, String tableName, ArrayList<String> attributeList, ArrayList<String> whereConditions) throws Exception {
+    private String executeSelect(String attributeDistinct, String tableName, ArrayList<String> attributeList, ArrayList<String> whereConditions, ArrayList<String> groupbyAttributes, String aggregateAttribute, String aggregateFunction) throws Exception {
         List<String> keys = this.getFinalKeysList(attributeDistinct, tableName, attributeList, whereConditions);
-        if (keys== null) {
-            return "No table found or not attribute found";
+
+        if (groupbyAttributes.isEmpty()) {
+
+            if (keys== null) {
+                return "No table found or no attribute found";
+            }
+
+            return this.keysToPrettyTable(keys, tableName, attributeDistinct, attributeList);
+        } else {
+            List<Pair<String, String>> groupByAttributesList = new ArrayList<>();
+            HashMap<String, List<String>> groupByMap = new HashMap<>();
+            List<String> finalTable = new ArrayList<>(); //lista cu tabel final -> pe ultima pozitie o sa fie valoarea functii de aggregate
+            List<Attribute> attributes = this.repository.findTable(this.currentDatabase.getDatabaseName(), tableName).getAttributeList();
+            String tableString = "";
+
+            String tableHeader = "|";
+
+            String[] aggregateAttr = aggregateAttribute.split("_");
+            Pair<String, String> aggregatePair = Pair.of(aggregateAttr[0], aggregateAttr[1]); //pereche tabel atribut;
+
+            for (String attr: groupbyAttributes) {
+                String[] attribute = attr.split("_");
+                groupByAttributesList.add(Pair.of(attribute[0], attribute[1]));
+                tableHeader = tableHeader + attribute[1] + "|";
+            }
+            tableHeader = tableHeader + aggregateFunction + "|";
+            finalTable.add(tableHeader);
+
+            String index = this.findIndexGroupBy(groupByAttributesList, tableName);
+
+            if (index.equals("")) {
+                //table scan cand nu avem index
+                List<DTO> tableDtos = this.mongoDbConfig.getDto(tableName);
+
+                for (DTO dto: tableDtos) {
+                    //ma duc pe fiecare dto si caut atributul de groupby
+                    String[] value = dto.getValue().split("#");
+                    List<String> tableValues = new ArrayList<>();
+                    tableValues.add(dto.getKey());
+                    tableValues.addAll(Arrays.asList(value));
+                    if (keys.contains(dto.getKey())) {
+                        int i = 0;
+                        for (Attribute attr: attributes) {
+                            Pair<String, String> pair = Pair.of(tableName, attr.getName());
+                            if (groupByAttributesList.contains(pair)) {
+                                if (groupByMap.keySet().contains(tableValues.get(i))) {
+                                    groupByMap.get(tableValues.get(i)).add(dto.getKey());
+                                } else {
+                                    String key = tableValues.get(i);
+                                    List<String> ids = new ArrayList<>();
+                                    ids.add(dto.getKey());
+                                    groupByMap.put(key, ids);
+                                }
+                            }
+                            i++;
+                        }
+                    }
+
+                }
+
+            } else {
+                //luam atributele din index
+                List<DTO> indexDtos = this.mongoDbConfig.getDto(index);
+                for (DTO dto: indexDtos) {
+                    String[] values = dto.getValue().split("#");
+                    List<String> ids = new ArrayList<>();
+                    for (String value: values) {
+                        if (keys.contains(value)) {
+                            ids.add(value);
+                        }
+                    }
+                    groupByMap.put(dto.getKey(), ids);
+                }
+
+            }
+            for (String groupByValue: groupByMap.keySet()) {
+                String row = "|" + groupByValue + "|";
+                List<String> ids= groupByMap.get(groupByValue);
+
+                String aggregateValue = this.executeAggregate(aggregateFunction, aggregatePair, ids, attributes, tableName);
+                row = row + aggregateValue + "|";
+                finalTable.add(row);
+            }
+            for (String tableRow: finalTable) {
+                tableString = tableString + tableRow + "\n";
+            }
+            return tableString;
         }
 
-        return this.keysToPrettyTable(keys, tableName, attributeDistinct, attributeList);
+    }
+
+    private String executeAggregate(String aggregateFunction, Pair<String, String> aggregateAttribute, List<String> ids, List<Attribute> attributes, String tableName) {
+        if (aggregateFunction.equals("count")) {
+            return String.valueOf(ids.size());
+        } else if (aggregateFunction.equals("sum")) {
+            if (aggregateAttribute.fst.equals(tableName)) {
+                int sum = 0;
+                for (String id: ids) {
+                    String[] value = this.mongoDbConfig.getValueByKey2(tableName, id).split("#");
+                    List<String> tableValues = new ArrayList<>();
+                    tableValues.add(id);
+                    tableValues.addAll(Arrays.asList(value));
+                    int i = 0;
+                    for (Attribute attr: attributes) {
+                        if (attr.getName().equals(aggregateAttribute.snd)) {
+                            sum = sum + Integer.parseInt(tableValues.get(i));
+                        }
+                        i++;
+                    }
+                }
+                return String.valueOf(sum);
+            }
+
+        } else if (aggregateFunction.equals("min")) {
+            if (aggregateAttribute.fst.equals(tableName)) {
+                int min = 100000000;
+                for (String id: ids) {
+                    String[] value = this.mongoDbConfig.getValueByKey2(tableName, id).split("#");
+                    List<String> tableValues = new ArrayList<>();
+                    tableValues.add(id);
+                    tableValues.addAll(Arrays.asList(value));
+                    int i = 0;
+                    for (Attribute attr: attributes) {
+                        if (attr.getName().equals(aggregateAttribute.snd)) {
+                            if (Integer.parseInt(tableValues.get(i)) < min)
+                            min = Integer.parseInt(tableValues.get(i));
+                        }
+                        i++;
+                    }
+                }
+                return String.valueOf(min);
+            }
+        }  else if (aggregateFunction.equals("max")) {
+            if (aggregateAttribute.fst.equals(tableName)) {
+                int max = 0;
+                for (String id: ids) {
+                    String[] value = this.mongoDbConfig.getValueByKey2(tableName, id).split("#");
+                    List<String> tableValues = new ArrayList<>();
+                    tableValues.add(id);
+                    tableValues.addAll(Arrays.asList(value));
+                    int i = 0;
+                    for (Attribute attr: attributes) {
+                        if (attr.getName().equals(aggregateAttribute.snd)) {
+                            if (Integer.parseInt(tableValues.get(i)) > max)
+                                max = Integer.parseInt(tableValues.get(i));
+                        }
+                        i++;
+                    }
+                }
+                return String.valueOf(max);
+            }
+        } else if (aggregateFunction.equals("avg")) {
+            if (aggregateAttribute.fst.equals(tableName)) {
+                int no = 0;
+                int sum = 0;
+                for (String id: ids) {
+                    String[] value = this.mongoDbConfig.getValueByKey2(tableName, id).split("#");
+                    List<String> tableValues = new ArrayList<>();
+                    tableValues.add(id);
+                    tableValues.addAll(Arrays.asList(value));
+                    int i = 0;
+                    for (Attribute attr: attributes) {
+                        if (attr.getName().equals(aggregateAttribute.snd)) {
+                            no++;
+                            sum = sum + Integer.parseInt(tableValues.get(i));
+                        }
+                        i++;
+                    }
+                }
+                return String.valueOf(sum/no);
+            }
+        }
+        return null;
+    }
+
+    private String findIndexGroupBy(List<Pair<String, String>> groupByAttributesList, String tableName) throws Exception {
+        String index = "";
+        String uniqueIndex = "";
+        StringBuilder indexName = new StringBuilder("INDEX_" + tableName);
+        StringBuilder indexNameCond = new StringBuilder("INDEX_" + tableName);
+
+        for (Pair<String, String> col: groupByAttributesList) {
+            if (col.fst.equals(tableName)) {
+                if (this.repository.findAttribute(this.currentDatabase.getDatabaseName(), tableName, col.snd).getUk() && !col.snd.matches("(.*)"+"Id") && !col.snd.matches("(.*)"+"id")) {
+                    uniqueIndex = "UK_" + tableName + "_" + col.snd;
+                }
+                indexName.append("_").append(col.snd);
+            }
+
+        }
+
+        if (!indexName.equals(indexNameCond)) {
+            for (Index idx: this.repository.findTable(this.currentDatabase.getDatabaseName(), tableName).getIndexList()) {
+                if (idx.getName().matches(indexName + "(.*)")) {
+                    index = idx.getName();
+                }
+            }
+        }
+
+        if (!index.equals("")) {
+            return index;
+        } else if (!uniqueIndex.equals("")) {
+            return uniqueIndex;
+        } else {
+            return "";
+        }
     }
 
     private List<String> getFinalKeysList(String attributeDistinct, String tableName, ArrayList<String> attributeList, ArrayList<String> whereConditions) throws Exception {
