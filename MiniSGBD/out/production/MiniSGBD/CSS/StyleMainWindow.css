@@ -1,9 +1,0 @@
-#root
-{
-
-    -fx-background-image: url('sgbd.png');
-    -fx-background-size: cover;
-}
-#name {
-    -fx-font-size: 20px;
-}

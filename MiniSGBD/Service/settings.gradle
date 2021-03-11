@@ -1,4 +1,0 @@
-rootProject.name = 'Service'
-include ':Model'
-include ':Repository'
-

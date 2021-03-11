@@ -21,7 +21,7 @@ public class MongoDbConfig {
     public MongoDbConfig(Database currentDatabase) {
 
         MongoClientURI uri = new MongoClientURI(
-                "mongodb+srv://diana:balsoi@cluster0.emk7j.mongodb.net/" + currentDatabase + "?retryWrites=true&w=majority");
+                "mongodb+srv://<name>:<password>@cluster0.emk7j.mongodb.net/" + currentDatabase + "?retryWrites=true&w=majority");
 
         this.mongoClient = new MongoClient(uri);
         this.db = mongoClient.getDatabase(currentDatabase.getDatabaseName());
