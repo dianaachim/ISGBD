@@ -1,7 +1,0 @@
-rootProject.name = 'ISGBDproject'
-include 'Model'
-include 'Repository'
-include 'Service'
-include 'Server'
-include 'Client'
-

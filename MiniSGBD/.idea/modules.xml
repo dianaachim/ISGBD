@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/MiniSGBD.iml" filepath="$PROJECT_DIR$/MiniSGBD.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/MiniSgbd.iml" filepath="$PROJECT_DIR$/.idea/MiniSgbd.iml" />
     </modules>
   </component>
 </project>
